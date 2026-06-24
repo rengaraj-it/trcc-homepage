@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NexaFlow — Home</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.min.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#0d0f14;--surface:#161922;--surface2:#1e2230;--border:#2a2f3e;
+    --accent:#6c63ff;--accent2:#a78bfa;--text:#e8eaf0;--muted:#8891aa;
+    --success:#22c55e;--danger:#ef4444;--radius:12px;--font:'Inter',sans-serif
+  }
+  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+  a{color:var(--accent2);text-decoration:none}
+  button{cursor:pointer;border:none;outline:none;font-family:var(--font)}
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(13,15,20,0.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;height:60px;display:flex;align-items:center;justify-content:space-between}
+  .logo{font-size:18px;font-weight:700;letter-spacing:-0.5px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .nav-links{display:flex;gap:2rem;align-items:center}
+  .nav-links a{color:var(--muted);font-size:14px;font-weight:500;transition:color 0.2s}
+  .nav-links a:hover{color:var(--text)}
+  .nav-btn{background:var(--accent);color:#fff;padding:8px 20px;border-radius:8px;font-size:14px;font-weight:500;transition:opacity 0.2s;cursor:pointer;border:none;font-family:var(--font)}
+  .nav-btn:hover{opacity:0.85}
+  #navUserArea{display:flex;align-items:center;gap:12px}
+  #userGreet{font-size:14px;color:var(--muted)}
+  #logoutBtn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:8px;font-size:13px;transition:all 0.2s;cursor:pointer;font-family:var(--font)}
+  #logoutBtn:hover{border-color:var(--danger);color:var(--danger)}
+  .page{display:none;min-height:100vh;padding-top:60px}
+  .page.active{display:block}
+  .hero{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 60px);text-align:center;padding:2rem;position:relative;overflow:hidden}
+  .hero::before{content:'';position:absolute;top:-200px;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(108,99,255,0.15) 0%,transparent 70%);pointer-events:none}
+  .hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(108,99,255,0.1);border:1px solid rgba(108,99,255,0.3);padding:6px 16px;border-radius:999px;font-size:13px;color:var(--accent2);margin-bottom:2rem}
+  .hero h1{font-size:clamp(2.5rem,6vw,4rem);font-weight:800;line-height:1.1;letter-spacing:-2px;margin-bottom:1.5rem;max-width:800px}
+  .hero h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .hero p{font-size:1.1rem;color:var(--muted);max-width:540px;line-height:1.7;margin-bottom:2.5rem}
+  .hero-btns{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center}
+  .btn-primary{background:var(--accent);color:#fff;padding:14px 32px;border-radius:10px;font-size:15px;font-weight:600;transition:all 0.2s;border:none;cursor:pointer;font-family:var(--font)}
+  .btn-primary:hover{background:#5a52e0;transform:translateY(-1px)}
+  .btn-outline{background:transparent;color:var(--text);padding:14px 32px;border-radius:10px;font-size:15px;font-weight:600;border:1px solid var(--border);transition:all 0.2s;cursor:pointer;font-family:var(--font)}
+  .btn-outline:hover{border-color:var(--accent);color:var(--accent2)}
+  .features{padding:5rem 2rem;max-width:1100px;margin:0 auto}
+  .section-label{font-size:13px;color:var(--accent2);font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:1rem}
+  .section-title{font-size:2rem;font-weight:700;letter-spacing:-0.5px;margin-bottom:1rem}
+  .section-sub{color:var(--muted);font-size:1rem;line-height:1.7;max-width:500px;margin-bottom:3rem}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.75rem;transition:border-color 0.2s}
+  .card:hover{border-color:rgba(108,99,255,0.4)}
+  .card-icon{width:44px;height:44px;background:rgba(108,99,255,0.1);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:1rem}
+  .card h3{font-size:16px;font-weight:600;margin-bottom:0.5rem}
+  .card p{font-size:14px;color:var(--muted);line-height:1.6}
+  .stats{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:3rem 2rem}
+  .stats-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:2rem;text-align:center}
+  .stat-num{font-size:2.5rem;font-weight:800;letter-spacing:-1px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .stat-label{font-size:14px;color:var(--muted);margin-top:4px}
+  .metrics{max-width:1100px;margin:0 auto 2rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+  .metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem}
+  .metric-label{font-size:13px;color:var(--muted);margin-bottom:8px}
+  .metric-val{font-size:1.75rem;font-weight:700;letter-spacing:-0.5px}
+  .metric-change{font-size:12px;color:var(--success);margin-top:4px}
+  .activity{max-width:1100px;margin:0 auto;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+  .activity-hdr{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+  .activity-hdr h3{font-size:15px;font-weight:600}
+  .act-row{padding:1rem 1.5rem;border-bottom:1px solid rgba(42,47,62,0.6);display:flex;align-items:center;gap:1rem;font-size:14px}
+  .act-row:last-child{border-bottom:none}
+  .act-avatar{width:32px;height:32px;border-radius:50%;background:rgba(108,99,255,0.15);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--accent2);flex-shrink:0}
+  .act-info{flex:1}
+  .act-name{font-weight:500}
+  .act-detail{font-size:13px;color:var(--muted);margin-top:2px}
+  .act-time{font-size:12px;color:var(--muted)}
+  .badge{padding:3px 10px;border-radius:999px;font-size:12px;font-weight:500}
+  .badge-green{background:rgba(34,197,94,0.1);color:var(--success)}
+  .badge-purple{background:rgba(108,99,255,0.1);color:var(--accent2)}
+  .overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);align-items:center;justify-content:center}
+  .overlay.open{display:flex}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:20px;width:100%;max-width:440px;padding:2.5rem;position:relative}
+  .modal-close{position:absolute;top:1rem;right:1rem;background:transparent;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1}
+  .modal-close:hover{color:var(--text)}
+  .modal h2{font-size:1.5rem;font-weight:700;margin-bottom:0.5rem}
+  .modal-sub{font-size:14px;color:var(--muted);margin-bottom:2rem}
+  .tabs{display:flex;gap:0;background:var(--bg);border-radius:10px;padding:4px;margin-bottom:1.75rem}
+  .tab{flex:1;padding:9px;border-radius:8px;font-size:14px;font-weight:500;text-align:center;cursor:pointer;color:var(--muted);background:transparent;border:none;transition:all 0.2s;font-family:var(--font)}
+  .tab.active{background:var(--surface2);color:var(--text)}
+  label.field-label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;margin-top:1rem}
+  label.field-label:first-of-type{margin-top:0}
+  input.field{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:14px;font-family:var(--font);transition:border-color 0.2s;outline:none}
+  input.field:focus{border-color:var(--accent)}
+  input.field::placeholder{color:var(--muted)}
+  .auth-btn{width:100%;background:var(--accent);color:#fff;padding:13px;border-radius:10px;font-size:15px;font-weight:600;margin-top:1.25rem;border:none;cursor:pointer;font-family:var(--font);transition:all 0.2s}
+  .auth-btn:hover{background:#5a52e0}
+  .msg{margin-top:1rem;padding:10px 14px;border-radius:8px;font-size:13px;display:none}
+  .msg.ok{background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);color:var(--success)}
+  .msg.err{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:var(--danger)}
+  .users-list{margin-top:1rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;font-size:13px;color:var(--muted);max-width:1100px;margin:1.5rem auto 0}
+  footer{background:var(--surface);border-top:1px solid var(--border);padding:2rem;text-align:center;font-size:13px;color:var(--muted);margin-top:3rem}
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+</style>
+</head>
+<body>
+<nav>
+  <span class="logo">NexaFlow</span>
+  <div class="nav-links" id="navLinksPublic">
+    <a href="#" onclick="showPage('heroPage')">Home</a>
+    <a href="#" onclick="showPage('heroPage')">Features</a>
+    <a href="#" onclick="showPage('heroPage')">Pricing</a>
+    <button class="nav-btn" onclick="openModal('login')">Sign in</button>
+  </div>
+  <div id="navUserArea" style="display:none">
+    <span id="userGreet"></span>
+    <button id="logoutBtn" onclick="logout()">Log out</button>
+  </div>
+</nav>
+
+<div id="heroPage" class="page active">
+  <div class="hero">
+    <div class="hero-badge">✦ Now in public beta</div>
+    <h1>Build faster with<br><span>intelligent workflows</span></h1>
+    <p>NexaFlow automates your entire pipeline — from idea to deployment — without the complexity. Trusted by over 12,000 teams worldwide.</p>
+    <div class="hero-btns">
+      <button class="btn-primary" onclick="openModal('register')">Get started free</button>
+      <button class="btn-outline" onclick="openModal('login')">Sign in →</button>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stats-inner">
+      <div><div class="stat-num">12K+</div><div class="stat-label">Teams active</div></div>
+      <div><div class="stat-num">98%</div><div class="stat-label">Uptime SLA</div></div>
+      <div><div class="stat-num">4.2M</div><div class="stat-label">Tasks automated</div></div>
+      <div><div class="stat-num">3x</div><div class="stat-label">Faster deployment</div></div>
+    </div>
+  </div>
+  <div class="features">
+    <div class="section-label">Features</div>
+    <div class="section-title">Everything you need to ship</div>
+    <div class="section-sub">A unified platform that brings your team, tools, and workflows into one seamless experience.</div>
+    <div class="cards">
+      <div class="card"><div class="card-icon">⚡</div><h3>Instant automation</h3><p>Trigger complex workflows with a single click. No YAML, no config hell — just define intent and ship.</p></div>
+      <div class="card"><div class="card-icon">🔒</div><h3>Secure by default</h3><p>End-to-end encryption, SOC 2 compliant, with granular role-based access for every team member.</p></div>
+      <div class="card"><div class="card-icon">📊</div><h3>Real-time analytics</h3><p>Live dashboards with actionable insights. Know exactly what's happening across your pipeline at all times.</p></div>
+      <div class="card"><div class="card-icon">🔗</div><h3>150+ integrations</h3><p>Connect your existing tools seamlessly. GitHub, Slack, Jira, Figma — all in one place.</p></div>
+      <div class="card"><div class="card-icon">🤖</div><h3>AI co-pilot</h3><p>Our embedded AI identifies bottlenecks, suggests optimisations, and auto-resolves common issues.</p></div>
+      <div class="card"><div class="card-icon">🌍</div><h3>Global edge network</h3><p>Deploy to 35 edge regions worldwide. Sub-50ms latency guaranteed for 99.9% of your users.</p></div>
+    </div>
+  </div>
+  <div style="text-align:center;padding:4rem 2rem;border-top:1px solid var(--border)">
+    <div class="section-label">Ready to start?</div>
+    <div class="section-title">Join 12,000+ teams today</div>
+    <p style="color:var(--muted);margin:1rem auto 2rem;max-width:420px;font-size:15px">Sign up in seconds. No credit card required. Free forever for small teams.</p>
+    <button class="btn-primary" onclick="openModal('register')">Create free account</button>
+  </div>
+  <footer>© 2025 NexaFlow Inc. · <a href="#">Privacy</a> · <a href="#">Terms</a> · Built with ♥</footer>
+</div>
+
+<div id="dashPage" class="page">
+  <div style="max-width:1100px;margin:0 auto;padding:2rem 2rem 0">
+    <div style="margin-bottom:2rem">
+      <div style="font-size:1.5rem;font-weight:700" id="dashWelcome">Welcome back 👋</div>
+      <div style="font-size:14px;color:var(--muted);margin-top:4px">Here's what's happening with your projects today.</div>
+    </div>
+    <div class="metrics">
+      <div class="metric"><div class="metric-label">🚀 Active projects</div><div class="metric-val">7</div><div class="metric-change">↑ 2 this week</div></div>
+      <div class="metric"><div class="metric-label">⚡ Tasks automated</div><div class="metric-val">1,284</div><div class="metric-change">↑ 18% vs last month</div></div>
+      <div class="metric"><div class="metric-label">🔗 Integrations</div><div class="metric-val">12</div><div class="metric-change">↑ 3 new</div></div>
+      <div class="metric"><div class="metric-label">⏱ Time saved</div><div class="metric-val">47h</div><div class="metric-change">This month</div></div>
+    </div>
+    <div class="activity">
+      <div class="activity-hdr"><h3>Recent activity</h3><span style="font-size:13px;color:var(--muted)">Live</span></div>
+      <div class="act-row"><div class="act-avatar">AK</div><div class="act-info"><div class="act-name">Deploy to production</div><div class="act-detail">nexaflow-core · v2.4.1 · Triggered by CI</div></div><span class="badge badge-green">Success</span><span class="act-time">2m ago</span></div>
+      <div class="act-row"><div class="act-avatar">ML</div><div class="act-info"><div class="act-name">Workflow updated</div><div class="act-detail">slack-notifier · 3 steps changed</div></div><span class="badge badge-purple">Draft</span><span class="act-time">14m ago</span></div>
+      <div class="act-row"><div class="act-avatar">RB</div><div class="act-info"><div class="act-name">Integration connected</div><div class="act-detail">GitHub → Jira sync configured</div></div><span class="badge badge-green">Active</span><span class="act-time">1h ago</span></div>
+      <div class="act-row"><div class="act-avatar">SK</div><div class="act-info"><div class="act-name">New team member</div><div class="act-detail">sara.kim@acme.com joined as Editor</div></div><span class="badge badge-purple">Invite</span><span class="act-time">3h ago</span></div>
+    </div>
+    <div id="regUsersBox" style="display:none">
+      <div class="users-list" id="regUsersList"></div>
+    </div>
+  </div>
+  <footer>© 2025 NexaFlow Inc. · <a href="#">Help</a> · <a href="#">Status</a></footer>
+</div>
+
+<div class="overlay" id="authOverlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <h2 id="modalTitle">Welcome back</h2>
+    <p class="modal-sub" id="modalSub">Sign in to your NexaFlow account</p>
+    <div class="tabs">
+      <button class="tab active" id="tabLogin" onclick="switchTab('login')">Sign in</button>
+      <button class="tab" id="tabRegister" onclick="switchTab('register')">Create account</button>
+    </div>
+    <div id="loginForm">
+      <label class="field-label">Email address</label>
+      <input class="field" type="email" id="loginEmail" placeholder="you@example.com"/>
+      <label class="field-label">Password</label>
+      <input class="field" type="password" id="loginPass" placeholder="••••••••"/>
+      <button class="auth-btn" onclick="doLogin()">Sign in →</button>
+      <div class="msg" id="loginMsg"></div>
+    </div>
+    <div id="registerForm" style="display:none">
+      <label class="field-label">Full name</label>
+      <input class="field" type="text" id="regName" placeholder="Ada Lovelace"/>
+      <label class="field-label">Email address</label>
+      <input class="field" type="email" id="regEmail" placeholder="you@example.com"/>
+      <label class="field-label">Password</label>
+      <input class="field" type="password" id="regPass" placeholder="Min. 6 characters"/>
+      <button class="auth-btn" onclick="doRegister()">Create account →</button>
+      <div class="msg" id="registerMsg"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let db,currentUser=null;
+async function initDB(){
+  try{
+    const SQL=await initSqlJs({locateFile:f=>`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${f}`});
+    db=new SQL.Database();
+    db.run(`CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL,email TEXT UNIQUE NOT NULL,password TEXT NOT NULL,created_at TEXT DEFAULT(datetime('now')))`);
+    const s=db.exec("SELECT COUNT(*) as c FROM users");
+    if(s[0].values[0][0]===0)db.run("INSERT INTO users(name,email,password)VALUES(?,?,?)",["Demo User","demo@nexaflow.io","demo123"]);
+  }catch(e){console.error(e)}
+}
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active')}
+function openModal(tab){document.getElementById('authOverlay').classList.add('open');switchTab(tab)}
+function closeModal(){document.getElementById('authOverlay').classList.remove('open');clearForms()}
+function switchTab(t){
+  document.getElementById('loginForm').style.display=t==='login'?'block':'none';
+  document.getElementById('registerForm').style.display=t==='register'?'block':'none';
+  document.getElementById('tabLogin').className='tab'+(t==='login'?' active':'');
+  document.getElementById('tabRegister').className='tab'+(t==='register'?' active':'');
+  document.getElementById('modalTitle').textContent=t==='login'?'Welcome back':'Create your account';
+  document.getElementById('modalSub').textContent=t==='login'?'Sign in to your NexaFlow account':'Start building for free today';
+  clearForms();
+}
+function clearForms(){['loginEmail','loginPass','regName','regEmail','regPass'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});showMsg('loginMsg','','');showMsg('registerMsg','','');}
+function showMsg(id,text,type){const el=document.getElementById(id);el.textContent=text;el.className='msg '+(text?type:'');el.style.display=text?'block':'none';}
+function hash(s){let h=0;for(let i=0;i<s.length;i++)h=(Math.imul(31,h)+s.charCodeAt(i))|0;return h.toString(16)}
+function doLogin(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const pass=document.getElementById('loginPass').value;
+  if(!email||!pass){showMsg('loginMsg','Please fill in all fields.','err');return}
+  if(!db){showMsg('loginMsg','Database not ready.','err');return}
+  try{
+    const r=db.exec("SELECT id,name,email FROM users WHERE email=? AND password=?",[email,hash(pass)]);
+    if(!r.length||!r[0].values.length){showMsg('loginMsg','Invalid email or password.','err');return}
+    const row=r[0].values[0];currentUser={id:row[0],name:row[1],email:row[2]};
+    showMsg('loginMsg','Signing you in…','ok');
+    setTimeout(()=>{closeModal();enterDashboard()},700);
+  }catch(e){showMsg('loginMsg','Error: '+e.message,'err')}
+}
+function doRegister(){
+  const name=document.getElementById('regName').value.trim();
+  const email=document.getElementById('regEmail').value.trim();
+  const pass=document.getElementById('regPass').value;
+  if(!name||!email||!pass){showMsg('registerMsg','Please fill in all fields.','err');return}
+  if(pass.length<6){showMsg('registerMsg','Password must be at least 6 characters.','err');return}
+  if(!db){showMsg('registerMsg','Database not ready.','err');return}
+  try{
+    const exists=db.exec("SELECT id FROM users WHERE email=?",[email]);
+    if(exists.length&&exists[0].values.length){showMsg('registerMsg','Email already registered.','err');return}
+    db.run("INSERT INTO users(name,email,password)VALUES(?,?,?)",[name,email,hash(pass)]);
+    const r=db.exec("SELECT id,name,email FROM users WHERE email=?",[email]);
+    const row=r[0].values[0];currentUser={id:row[0],name:row[1],email:row[2]};
+    showMsg('registerMsg','Account created! Redirecting…','ok');
+    setTimeout(()=>{closeModal();enterDashboard()},700);
+  }catch(e){showMsg('registerMsg','Error: '+e.message,'err')}
+}
+function enterDashboard(){
+  document.getElementById('navLinksPublic').style.display='none';
+  document.getElementById('navUserArea').style.display='flex';
+  document.getElementById('userGreet').textContent=currentUser.name;
+  document.getElementById('dashWelcome').textContent='Welcome back, '+currentUser.name.split(' ')[0]+' 👋';
+  try{
+    const all=db.exec("SELECT name,email,created_at FROM users ORDER BY created_at DESC LIMIT 10");
+    if(all.length&&all[0].values.length){
+      const html=all[0].values.map(u=>`<div style="padding:6px 0;border-bottom:1px solid var(--border)"><strong style="color:var(--text)">${u[0]}</strong> · ${u[1]}<span style="float:right">${u[2]?u[2].substring(0,10):''}</span></div>`).join('');
+      document.getElementById('regUsersList').innerHTML='<div style="margin-bottom:8px;font-weight:600;color:var(--text)">📋 Registered users</div>'+html;
+      document.getElementById('regUsersBox').style.display='block';
+    }
+  }catch(e){}
+  showPage('dashPage');
+}
+function logout(){currentUser=null;document.getElementById('navLinksPublic').style.display='flex';document.getElementById('navUserArea').style.display='none';document.getElementById('regUsersBox').style.display='none';showPage('heroPage')}
+document.getElementById('authOverlay').addEventListener('click',function(e){if(e.target===this)closeModal()});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape')closeModal();
+  if(e.key==='Enter'){
+    const lf=document.getElementById('loginForm');const rf=document.getElementById('registerForm');
+    if(lf&&lf.style.display!=='none')doLogin();else if(rf&&rf.style.display!=='none')doRegister();
+  }
+});
+initDB();
+</script>
+</body>
+</html>

@@ -137,6 +137,7 @@
   .cc-avatar{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:17px;margin-bottom:0.85rem}
   .cc-name{font-size:15px;font-weight:700;margin-bottom:4px}
   .cc-phone{font-size:13px;color:var(--muted);margin-bottom:8px}
+  .cc-extra{font-size:12px;color:var(--text);margin-top:3px;line-height:1.4}
   .cc-cat{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;background:rgba(124,58,237,0.08);color:var(--accent)}
   .cc-del{position:absolute;top:12px;right:12px;background:transparent;border:none;color:var(--muted);font-size:18px;cursor:pointer;line-height:1;opacity:0.4}
   .cc-del:hover{opacity:1;color:var(--danger)}
@@ -352,22 +353,31 @@
             </div>
             <div class="form-field">
               <label>Category</label>
-              <select id="ctCategory">
+              <select id="ctCategory" onchange="ctCategoryChange(this)">
                 <option value="">Select category…</option>
-                <option value="Volunteer">Volunteer</option>
-                <option value="Donor">Donor</option>
-                <option value="Beneficiary">Beneficiary</option>
-                <option value="Staff">Staff</option>
-                <option value="Trustee">Trustee</option>
-                <option value="Partner">Partner</option>
+                <option value="__new__">➕ New Category…</option>
               </select>
+              <input type="text" id="ctNewCategory" placeholder="New category name…" style="display:none;margin-top:6px;width:100%;background:#fff;border:1.5px solid var(--accent);border-radius:8px;padding:8px 10px;font-size:14px;font-family:var(--font);color:var(--text);outline:none"/>
             </div>
           </div>
-          <button class="btn-add" onclick="addContact()" style="margin-top:4px">Save Contact</button>
+          <!-- Dynamic custom fields -->
+          <div id="ctCustomFieldsArea" style="margin-top:10px"></div>
+          <div style="display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap">
+            <select id="ctFieldSelect" onchange="ctFieldSelectChange()" style="flex:1;min-width:160px;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;font-family:var(--font);color:var(--text);outline:none">
+              <option value="">➕ Add custom field…</option>
+              <option value="__new__">✏️ Define new field…</option>
+            </select>
+            <input type="text" id="ctNewFieldName" placeholder="New field name…" style="display:none;flex:1;min-width:140px;background:#fff;border:1.5px solid var(--accent);border-radius:8px;padding:8px 10px;font-size:13px;font-family:var(--font);color:var(--text);outline:none"/>
+            <button onclick="ctAddField()" style="padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px">Add Field</button>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
+            <button class="btn-add" onclick="addContact()">Save Contact</button>
+            <button onclick="ctResetForm()" style="padding:10px 20px;background:#f0f0f0;color:var(--text);border:none;border-radius:10px;cursor:pointer;font-size:14px">Reset</button>
+          </div>
           <div class="msg" id="ctMsg"></div>
         </div>
         <div class="contacts-toolbar">
-          <input type="text" id="ctSearch" placeholder="🔍 Search contacts by name, phone, or category…" oninput="renderContacts()"/>
+          <input type="text" id="ctSearch" placeholder="🔍 Search contacts…" oninput="renderContacts()"/>
         </div>
         <div class="contacts-grid" id="contactsGrid"></div>
         <div id="ctEmpty" style="display:none;color:var(--muted);font-size:14px;padding:1rem 0">No contacts found.</div>
@@ -418,6 +428,9 @@ async function initDB(){
     db=new SQL.Database();
     db.run(`CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL,email TEXT UNIQUE NOT NULL,password TEXT NOT NULL,created_at TEXT DEFAULT(datetime('now')))`);
     db.run(`CREATE TABLE IF NOT EXISTS contacts(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL,phone TEXT NOT NULL,category TEXT NOT NULL)`);
+    db.run(`CREATE TABLE IF NOT EXISTS contact_categories(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT UNIQUE NOT NULL)`);
+    db.run(`CREATE TABLE IF NOT EXISTS contact_field_defs(id INTEGER PRIMARY KEY AUTOINCREMENT,field_name TEXT UNIQUE NOT NULL)`);
+    db.run(`CREATE TABLE IF NOT EXISTS contact_field_values(id INTEGER PRIMARY KEY AUTOINCREMENT,contact_id INTEGER NOT NULL,field_name TEXT NOT NULL,field_value TEXT NOT NULL)`);
     db.run(`CREATE TABLE IF NOT EXISTS keywords(id INTEGER PRIMARY KEY AUTOINCREMENT,word TEXT NOT NULL,category TEXT NOT NULL,priority TEXT NOT NULL)`);
     const s=db.exec("SELECT COUNT(*) FROM users");
     if(s[0].values[0][0]===0){
@@ -429,6 +442,10 @@ async function initDB(){
       db.run("INSERT INTO contacts(name,phone,category)VALUES(?,?,?)",["Priya Sharma","9123456780","Donor"]);
       db.run("INSERT INTO contacts(name,phone,category)VALUES(?,?,?)",["Murugan S","9988776655","Beneficiary"]);
       db.run("INSERT INTO contacts(name,phone,category)VALUES(?,?,?)",["Lakshmi N","9001122334","Trustee"]);
+    }
+    const cc=db.exec("SELECT COUNT(*) FROM contact_categories");
+    if(cc[0].values[0][0]===0){
+      ["Volunteer","Donor","Beneficiary","Staff","Trustee","Partner"].forEach(cat=>db.run("INSERT OR IGNORE INTO contact_categories(name)VALUES(?)",[cat]));
     }
     const k=db.exec("SELECT COUNT(*) FROM keywords");
     if(k[0].values[0][0]===0){
@@ -582,8 +599,76 @@ function showKwMsg(text,type){
 }
 
 /* ---- CONTACTS ---- */
+/* --- CONTACTS --- */
+let ctCustomFields=[]; // [{name,value}]
+
+function loadContactCategories(){
+  const r=db.exec("SELECT name FROM contact_categories ORDER BY name");
+  const cats=r.length?r[0].values.map(v=>v[0]):[];
+  const sel=document.getElementById('ctCategory');
+  sel.innerHTML='<option value="">Select category…</option>';
+  cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o)});
+  const n=document.createElement('option');n.value='__new__';n.textContent='➕ New Category…';sel.appendChild(n);
+}
+function loadFieldDefs(){
+  const r=db.exec("SELECT field_name FROM contact_field_defs ORDER BY field_name");
+  const defs=r.length?r[0].values.map(v=>v[0]):[];
+  const sel=document.getElementById('ctFieldSelect');
+  sel.innerHTML='<option value="">➕ Add custom field…</option>';
+  defs.forEach(f=>{const o=document.createElement('option');o.value=f;o.textContent=f;sel.appendChild(o)});
+  const n=document.createElement('option');n.value='__new__';n.textContent='✏️ Define new field…';sel.appendChild(n);
+}
+function ctCategoryChange(sel){
+  const ni=document.getElementById('ctNewCategory');
+  ni.style.display=sel.value==='__new__'?'block':'none';
+  if(sel.value==='__new__')ni.focus();
+}
+function ctFieldSelectChange(){
+  const sel=document.getElementById('ctFieldSelect');
+  const ni=document.getElementById('ctNewFieldName');
+  ni.style.display=sel.value==='__new__'?'block':'none';
+  if(sel.value==='__new__')ni.focus();
+}
+function ctAddField(){
+  const sel=document.getElementById('ctFieldSelect');
+  const ni=document.getElementById('ctNewFieldName');
+  let fname='';
+  if(sel.value==='__new__'){
+    fname=ni.value.trim();
+    if(!fname){alert('Enter a field name.');return}
+    db.run("INSERT OR IGNORE INTO contact_field_defs(field_name)VALUES(?)",[fname]);
+    ni.value='';ni.style.display='none';
+    loadFieldDefs();
+  } else if(sel.value){
+    fname=sel.value;
+  } else {return}
+  if(ctCustomFields.find(f=>f.name===fname)){alert('Field already added.');return}
+  ctCustomFields.push({name:fname,value:''});
+  renderCustomFieldInputs();
+  sel.value='';
+}
+function renderCustomFieldInputs(){
+  const area=document.getElementById('ctCustomFieldsArea');
+  area.innerHTML=ctCustomFields.map((f,i)=>`
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
+      <label style="min-width:120px;font-size:13px;color:var(--muted);font-weight:600">${f.name}</label>
+      <input type="text" value="${f.value}" oninput="ctCustomFields[${i}].value=this.value" placeholder="Value for ${f.name}" style="flex:1;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;font-family:var(--font);color:var(--text);outline:none"/>
+      <button onclick="ctRemoveField(${i})" style="background:#fee2e2;color:#dc2626;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:13px">×</button>
+    </div>`).join('');
+}
+function ctRemoveField(i){ctCustomFields.splice(i,1);renderCustomFieldInputs()}
+function ctResetForm(){
+  document.getElementById('ctName').value='';
+  document.getElementById('ctPhone').value='';
+  document.getElementById('ctCategory').value='';
+  document.getElementById('ctNewCategory').style.display='none';
+  document.getElementById('ctNewCategory').value='';
+  ctCustomFields=[];renderCustomFieldInputs();
+}
 function loadContacts(){
   if(!db)return;
+  loadContactCategories();
+  loadFieldDefs();
   const r=db.exec("SELECT id,name,phone,category FROM contacts ORDER BY id DESC");
   contacts=r.length?r[0].values.map(row=>({id:row[0],name:row[1],phone:row[2],category:row[3]})):[];
   renderContacts();
@@ -595,26 +680,47 @@ function renderContacts(){
   const empty=document.getElementById('ctEmpty');
   if(!filtered.length){grid.innerHTML='';empty.style.display='block';return}
   empty.style.display='none';
-  grid.innerHTML=filtered.map(c=>`
-    <div class="contact-card">
+  grid.innerHTML=filtered.map(c=>{
+    const fr=db.exec("SELECT field_name,field_value FROM contact_field_values WHERE contact_id=?",[c.id]);
+    const extras=fr.length?fr[0].values.map(v=>`<div class="cc-extra"><span style="color:var(--muted);font-size:11px">${v[0]}:</span> ${v[1]}</div>`).join(''):'';
+    return `<div class="contact-card">
       <button class="cc-del" onclick="deleteContact(${c.id})">×</button>
       <div class="cc-avatar">${c.name.charAt(0).toUpperCase()}</div>
       <div class="cc-name">${c.name}</div>
       <div class="cc-phone">📞 ${c.phone}</div>
       <span class="cc-cat">${c.category}</span>
-    </div>`).join('');
+      ${extras}
+    </div>`;
+  }).join('');
 }
 function addContact(){
   const name=document.getElementById('ctName').value.trim();
   const phone=document.getElementById('ctPhone').value.trim();
-  const category=document.getElementById('ctCategory').value;
+  let category=document.getElementById('ctCategory').value;
+  if(category==='__new__'){
+    category=document.getElementById('ctNewCategory').value.trim();
+    if(!category){showCtMsg('Enter new category name.','err');return}
+    db.run("INSERT OR IGNORE INTO contact_categories(name)VALUES(?)",[category]);
+    loadContactCategories();
+    document.getElementById('ctCategory').value=category;
+    document.getElementById('ctNewCategory').style.display='none';
+    document.getElementById('ctNewCategory').value='';
+  }
   if(!name||!phone||!category){showCtMsg('Please fill in all fields.','err');return}
   if(!/^\+?[\d\s\-]{7,15}$/.test(phone)){showCtMsg('Enter a valid phone number.','err');return}
   db.run("INSERT INTO contacts(name,phone,category)VALUES(?,?,?)",[name,phone,category]);
-  document.getElementById('ctName').value='';document.getElementById('ctPhone').value='';document.getElementById('ctCategory').value='';
+  const cid=db.exec("SELECT last_insert_rowid()")[0].values[0][0];
+  ctCustomFields.forEach(f=>{
+    if(f.value.trim()) db.run("INSERT INTO contact_field_values(contact_id,field_name,field_value)VALUES(?,?,?)",[cid,f.name,f.value.trim()]);
+  });
+  ctResetForm();
   showCtMsg('Contact saved!','ok');loadContacts();setTimeout(()=>showCtMsg('',''),2500);
 }
-function deleteContact(id){db.run("DELETE FROM contacts WHERE id=?",[id]);loadContacts()}
+function deleteContact(id){
+  db.run("DELETE FROM contact_field_values WHERE contact_id=?",[id]);
+  db.run("DELETE FROM contacts WHERE id=?",[id]);
+  loadContacts();
+}
 function showCtMsg(text,type){const el=document.getElementById('ctMsg');el.textContent=text;el.className='msg '+(text?type:'');el.style.display=text?'block':'none'}
 
 /* ---- NAV ---- */

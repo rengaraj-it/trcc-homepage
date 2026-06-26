@@ -417,7 +417,7 @@ async function initDB(){
     db.run(`CREATE TABLE IF NOT EXISTS keywords(id INTEGER PRIMARY KEY AUTOINCREMENT,word TEXT NOT NULL,category TEXT NOT NULL,priority TEXT NOT NULL)`);
     const s=db.exec("SELECT COUNT(*) FROM users");
     if(s[0].values[0][0]===0){
-      db.run("INSERT INTO users(name,email,password)VALUES(?,?,?)",["Demo User","demo@trcc.org","demo123"]);
+      db.run("INSERT INTO users(name,email,password)VALUES(?,?,?)",["Demo User","demo@trcc.org","5c7bd16f"]);
     }
     const c=db.exec("SELECT COUNT(*) FROM contacts");
     if(c[0].values[0][0]===0){

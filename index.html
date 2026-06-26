@@ -16,7 +16,6 @@
   a{color:var(--accent);text-decoration:none}
   button{cursor:pointer;border:none;outline:none;font-family:var(--font)}
 
-  /* NAV */
   nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(255,255,255,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;height:64px;display:flex;align-items:center;justify-content:space-between}
   .logo-wrap{display:flex;align-items:center;gap:12px}
   .logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;flex-shrink:0}
@@ -34,7 +33,6 @@
   .page{display:none;min-height:100vh;padding-top:64px}
   .page.active{display:block}
 
-  /* HERO */
   .hero{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 64px);text-align:center;padding:3rem 2rem;background:linear-gradient(160deg,#f5f3ef 0%,#ede9fe 60%,#f5f3ef 100%);position:relative;overflow:hidden}
   .hero::before{content:'';position:absolute;top:-100px;right:-100px;width:400px;height:400px;background:radial-gradient(circle,rgba(168,85,247,0.12),transparent 70%);pointer-events:none}
   .hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.2);padding:6px 18px;border-radius:999px;font-size:13px;color:var(--accent);margin-bottom:2rem;font-weight:500}
@@ -62,7 +60,6 @@
   .card h3{font-size:16px;font-weight:700;margin-bottom:0.5rem}
   .card p{font-size:14px;color:var(--muted);line-height:1.65}
 
-  /* DASHBOARD LAYOUT */
   #dashPage{background:var(--bg)}
   .dash-layout{display:flex;min-height:calc(100vh - 64px)}
   .sidebar{width:220px;flex-shrink:0;background:#fff;border-right:1px solid var(--border);padding:1.5rem 1rem;display:flex;flex-direction:column;gap:4px}
@@ -74,14 +71,12 @@
   .nav-item .icon{font-size:17px;width:22px;text-align:center}
   .dash-content{flex:1;padding:2rem;overflow:auto}
 
-  /* MODULE PANELS */
   .module{display:none}
   .module.active{display:block}
   .mod-header{margin-bottom:1.5rem}
   .mod-title{font-size:1.4rem;font-weight:800;color:var(--text)}
   .mod-sub{font-size:14px;color:var(--muted);margin-top:4px}
 
-  /* ACTIVITY MODULE */
   .metrics-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem}
   .metric{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem}
   .metric-label{font-size:13px;color:var(--muted);margin-bottom:8px}
@@ -102,21 +97,35 @@
   .badge-purple{background:rgba(124,58,237,0.1);color:var(--accent)}
 
   /* KEYWORDS MODULE */
-  .kw-input-row{display:flex;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap}
-  .kw-input-row input{flex:1;min-width:180px;background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-size:14px;font-family:var(--font);color:var(--text);outline:none}
-  .kw-input-row input:focus{border-color:var(--accent)}
-  .kw-input-row select{background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-size:14px;font-family:var(--font);color:var(--text);outline:none;cursor:pointer}
-  .kw-input-row select:focus{border-color:var(--accent)}
+  .kw-form-box{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1.5rem}
+  .kw-form-box h3{font-size:15px;font-weight:700;margin-bottom:1.25rem}
+  .kw-form-row{display:flex;gap:10px;flex-wrap:wrap}
+  .kw-form-row input,.kw-form-row select{background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-size:14px;font-family:var(--font);color:var(--text);outline:none}
+  .kw-form-row input{flex:1;min-width:160px}
+  .kw-form-row input:focus,.kw-form-row select:focus{border-color:var(--accent);background:#fff}
   .btn-add{background:var(--accent);color:#fff;padding:10px 22px;border-radius:10px;font-size:14px;font-weight:600;border:none;cursor:pointer;font-family:var(--font);white-space:nowrap}
   .btn-add:hover{background:#6d28d9}
+  .kw-filter-bar{display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap}
+  .kw-filter-btn{padding:6px 16px;border-radius:999px;font-size:13px;font-weight:500;border:1.5px solid var(--border);background:#fff;color:var(--muted);cursor:pointer;transition:all 0.18s}
+  .kw-filter-btn.active,.kw-filter-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(124,58,237,0.06)}
+  .kw-section{margin-bottom:1.75rem}
+  .kw-section-title{font-size:13px;font-weight:700;color:var(--muted);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:0.75rem;padding-bottom:6px;border-bottom:1px solid var(--border)}
   .kw-tags{display:flex;flex-wrap:wrap;gap:10px}
   .kw-tag{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;font-size:13px;font-weight:600;border:1.5px solid}
   .kw-tag.priority-high{background:rgba(220,38,38,0.07);border-color:rgba(220,38,38,0.25);color:var(--danger)}
   .kw-tag.priority-medium{background:rgba(234,179,8,0.07);border-color:rgba(234,179,8,0.35);color:#b45309}
   .kw-tag.priority-low{background:rgba(22,163,74,0.07);border-color:rgba(22,163,74,0.25);color:var(--success)}
-  .kw-tag span.del{cursor:pointer;font-size:16px;line-height:1;opacity:0.5}
-  .kw-tag span.del:hover{opacity:1}
+  .kw-tag.priority-general{background:rgba(124,58,237,0.07);border-color:rgba(124,58,237,0.25);color:var(--accent)}
+  .kw-tag .kw-edit{cursor:pointer;font-size:13px;opacity:0.5;margin-left:2px}
+  .kw-tag .kw-edit:hover{opacity:1}
+  .kw-tag .kw-del{cursor:pointer;font-size:16px;opacity:0.4}
+  .kw-tag .kw-del:hover{opacity:1;color:var(--danger)}
   .kw-empty{color:var(--muted);font-size:14px;padding:1rem 0}
+  .kw-msg{margin-top:10px;padding:8px 14px;border-radius:8px;font-size:13px;display:none}
+  .kw-msg.ok{background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.2);color:var(--success)}
+  .kw-msg.err{background:rgba(220,38,38,0.07);border:1px solid rgba(220,38,38,0.2);color:var(--danger)}
+  /* edit inline */
+  .kw-edit-input{border:1.5px solid var(--accent);border-radius:6px;padding:3px 8px;font-size:13px;font-family:var(--font);outline:none;width:110px}
 
   /* CONTACTS MODULE */
   .contacts-toolbar{display:flex;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap;align-items:center}
@@ -131,8 +140,6 @@
   .cc-cat{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;background:rgba(124,58,237,0.08);color:var(--accent)}
   .cc-del{position:absolute;top:12px;right:12px;background:transparent;border:none;color:var(--muted);font-size:18px;cursor:pointer;line-height:1;opacity:0.4}
   .cc-del:hover{opacity:1;color:var(--danger)}
-
-  /* ADD CONTACT FORM */
   .add-contact-form{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:2rem}
   .add-contact-form h3{font-size:15px;font-weight:700;margin-bottom:1.25rem;color:var(--text)}
   .form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:12px}
@@ -142,7 +149,6 @@
   .form-field input:focus,.form-field select:focus{border-color:var(--accent);background:#fff}
   .form-field input::placeholder{color:#b0b8cc}
 
-  /* AUTH MODAL */
   .overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(100,90,140,0.25);backdrop-filter:blur(6px);align-items:center;justify-content:center}
   .overlay.open{display:flex}
   .modal{background:#fff;border:1px solid var(--border);border-radius:20px;width:100%;max-width:440px;padding:2.5rem;position:relative;box-shadow:0 20px 60px rgba(124,58,237,0.1)}
@@ -169,7 +175,6 @@
 </head>
 <body>
 
-<!-- NAV -->
 <nav>
   <div class="logo-wrap">
     <div class="logo-icon">TR</div>
@@ -232,7 +237,6 @@
 <!-- DASHBOARD PAGE -->
 <div id="dashPage" class="page">
   <div class="dash-layout">
-    <!-- SIDEBAR -->
     <div class="sidebar">
       <div class="sidebar-label">Modules</div>
       <button class="nav-item active" onclick="switchModule('activity')" id="nav-activity">
@@ -251,7 +255,6 @@
       </div>
     </div>
 
-    <!-- MAIN CONTENT -->
     <div class="dash-content">
 
       <!-- ACTIVITY MODULE -->
@@ -280,30 +283,49 @@
       <div class="module" id="module-keywords">
         <div class="mod-header">
           <div class="mod-title">Keywords</div>
-          <div class="mod-sub">Manage tags and keywords for your charity programs</div>
+          <div class="mod-sub">Manage categorized keywords for your charity programs</div>
         </div>
-        <div style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1.5rem">
-          <div style="font-size:15px;font-weight:700;margin-bottom:1.25rem">Add Keyword</div>
-          <div class="kw-input-row">
-            <input type="text" id="kwInput" placeholder="Enter keyword…" onkeydown="if(event.key==='Enter')addKeyword()"/>
-            <select id="kwPriority">
-              <option value="high">🔴 High Priority</option>
-              <option value="medium" selected>🟡 Medium Priority</option>
-              <option value="low">🟢 Low Priority</option>
+
+        <!-- ADD / EDIT FORM -->
+        <div class="kw-form-box">
+          <h3 id="kwFormTitle">➕ Add Keyword</h3>
+          <div class="kw-form-row">
+            <input type="text" id="kwInput" placeholder="Keyword…"/>
+            <select id="kwCategory">
+              <option value="Education">📚 Education</option>
+              <option value="Healthcare">🏥 Healthcare</option>
+              <option value="Environment">🌱 Environment</option>
+              <option value="Women Welfare">👩 Women Welfare</option>
+              <option value="Livelihood">🌾 Livelihood</option>
+              <option value="Community">🤝 Community</option>
+              <option value="General">🏷️ General</option>
             </select>
-            <button class="btn-add" onclick="addKeyword()">+ Add</button>
+            <select id="kwPriority">
+              <option value="high">🔴 High</option>
+              <option value="medium" selected>🟡 Medium</option>
+              <option value="low">🟢 Low</option>
+            </select>
+            <button class="btn-add" id="kwSaveBtn" onclick="saveKeyword()">+ Add</button>
+            <button id="kwCancelBtn" onclick="cancelKwEdit()" style="display:none;padding:10px 16px;border-radius:10px;border:1.5px solid var(--border);background:#fff;color:var(--muted);font-size:14px">Cancel</button>
           </div>
+          <div class="kw-msg" id="kwMsg"></div>
         </div>
+
+        <!-- FILTER BAR -->
+        <div class="kw-filter-bar" id="kwFilterBar">
+          <button class="kw-filter-btn active" onclick="kwSetFilter('All',this)">All</button>
+          <button class="kw-filter-btn" onclick="kwSetFilter('Education',this)">📚 Education</button>
+          <button class="kw-filter-btn" onclick="kwSetFilter('Healthcare',this)">🏥 Healthcare</button>
+          <button class="kw-filter-btn" onclick="kwSetFilter('Environment',this)">🌱 Environment</button>
+          <button class="kw-filter-btn" onclick="kwSetFilter('Women Welfare',this)">👩 Women Welfare</button>
+          <button class="kw-filter-btn" onclick="kwSetFilter('Livelihood',this)">🌾 Livelihood</button>
+          <button class="kw-filter-btn" onclick="kwSetFilter('Community',this)">🤝 Community</button>
+          <button class="kw-filter-btn" onclick="kwSetFilter('General',this)">🏷️ General</button>
+        </div>
+
+        <!-- KEYWORD LIST grouped by category -->
         <div style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem">
-          <div style="font-size:15px;font-weight:700;margin-bottom:1.25rem">All Keywords</div>
-          <div class="kw-tags" id="kwTagsContainer">
-            <span class="kw-tag priority-high">Education <span class="del" onclick="removeKw(this)">×</span></span>
-            <span class="kw-tag priority-high">Healthcare <span class="del" onclick="removeKw(this)">×</span></span>
-            <span class="kw-tag priority-medium">Scholarship <span class="del" onclick="removeKw(this)">×</span></span>
-            <span class="kw-tag priority-medium">Volunteer <span class="del" onclick="removeKw(this)">×</span></span>
-            <span class="kw-tag priority-low">Environment <span class="del" onclick="removeKw(this)">×</span></span>
-            <span class="kw-tag priority-low">Women Welfare <span class="del" onclick="removeKw(this)">×</span></span>
-          </div>
+          <div id="kwListContainer"><span class="kw-empty">No keywords yet.</span></div>
         </div>
       </div>
 
@@ -313,8 +335,6 @@
           <div class="mod-title">Contacts</div>
           <div class="mod-sub">Manage volunteers, donors, and beneficiaries</div>
         </div>
-
-        <!-- ADD CONTACT FORM -->
         <div class="add-contact-form">
           <h3>➕ Add New Contact</h3>
           <div class="form-row">
@@ -342,20 +362,16 @@
           <button class="btn-add" onclick="addContact()" style="margin-top:4px">Save Contact</button>
           <div class="msg" id="ctMsg"></div>
         </div>
-
-        <!-- SEARCH -->
         <div class="contacts-toolbar">
           <input type="text" id="ctSearch" placeholder="🔍 Search contacts by name, phone, or category…" oninput="renderContacts()"/>
         </div>
-
-        <!-- CONTACTS GRID -->
         <div class="contacts-grid" id="contactsGrid"></div>
         <div id="ctEmpty" style="display:none;color:var(--muted);font-size:14px;padding:1rem 0">No contacts found.</div>
       </div>
 
-    </div><!-- end dash-content -->
-  </div><!-- end dash-layout -->
-</div><!-- end dashPage -->
+    </div>
+  </div>
+</div>
 
 <!-- AUTH OVERLAY -->
 <div class="overlay" id="authOverlay">
@@ -389,8 +405,8 @@
 </div>
 
 <script>
-let db, currentUser=null;
-let contacts=[];
+let db, currentUser=null, contacts=[], keywords=[];
+let kwEditId=null, kwActiveFilter='All';
 
 async function initDB(){
   try{
@@ -398,6 +414,7 @@ async function initDB(){
     db=new SQL.Database();
     db.run(`CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL,email TEXT UNIQUE NOT NULL,password TEXT NOT NULL,created_at TEXT DEFAULT(datetime('now')))`);
     db.run(`CREATE TABLE IF NOT EXISTS contacts(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL,phone TEXT NOT NULL,category TEXT NOT NULL)`);
+    db.run(`CREATE TABLE IF NOT EXISTS keywords(id INTEGER PRIMARY KEY AUTOINCREMENT,word TEXT NOT NULL,category TEXT NOT NULL,priority TEXT NOT NULL)`);
     const s=db.exec("SELECT COUNT(*) FROM users");
     if(s[0].values[0][0]===0){
       db.run("INSERT INTO users(name,email,password)VALUES(?,?,?)",["Demo User","demo@trcc.org","demo123"]);
@@ -409,24 +426,128 @@ async function initDB(){
       db.run("INSERT INTO contacts(name,phone,category)VALUES(?,?,?)",["Murugan S","9988776655","Beneficiary"]);
       db.run("INSERT INTO contacts(name,phone,category)VALUES(?,?,?)",["Lakshmi N","9001122334","Trustee"]);
     }
-    loadContacts();
+    const k=db.exec("SELECT COUNT(*) FROM keywords");
+    if(k[0].values[0][0]===0){
+      const seed=[
+        ["Education","high"],["Scholarship","Education","high"],["Healthcare","Healthcare","medium"],
+        ["Medical Camp","Healthcare","medium"],["Tree Planting","Environment","low"],
+        ["Women Empowerment","Women Welfare","high"],["Self Help Group","Women Welfare","medium"],
+        ["Skill Development","Livelihood","medium"],["Volunteer Drive","Community","low"]
+      ];
+      db.run("INSERT INTO keywords(word,category,priority)VALUES(?,?,?)","Education","Education","high");
+      db.run("INSERT INTO keywords(word,category,priority)VALUES(?,?,?)","Scholarship","Education","high");
+      db.run("INSERT INTO keywords(word,category,priority)VALUES(?,?,?)","Healthcare","Healthcare","medium");
+      db.run("INSERT INTO keywords(word,category,priority)VALUES(?,?,?)","Medical Camp","Healthcare","medium");
+      db.run("INSERT INTO keywords(word,category,priority)VALUES(?,?,?)","Tree Planting","Environment","low");
+      db.run("INSERT INTO keywords(word,category,priority)VALUES(?,?,?)","Women Empowerment","Women Welfare","high");
+      db.run("INSERT INTO keywords(word,category,priority)VALUES(?,?,?)","Self Help Group","Women Welfare","medium");
+      db.run("INSERT INTO keywords(word,category,priority)VALUES(?,?,?)","Skill Development","Livelihood","medium");
+      db.run("INSERT INTO keywords(word,category,priority)VALUES(?,?,?)","Volunteer Drive","Community","low");
+    }
+    loadContacts();loadKeywords();
   }catch(e){console.error(e)}
 }
 
+/* ---- KEYWORDS ---- */
+function loadKeywords(){
+  if(!db)return;
+  const r=db.exec("SELECT id,word,category,priority FROM keywords ORDER BY category,priority DESC,word");
+  keywords=r.length?r[0].values.map(row=>({id:row[0],word:row[1],category:row[2],priority:row[3]})):[];
+  renderKeywords();
+}
+
+function kwSetFilter(cat,btn){
+  kwActiveFilter=cat;
+  document.querySelectorAll('.kw-filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderKeywords();
+}
+
+function renderKeywords(){
+  const list=kwActiveFilter==='All'?keywords:keywords.filter(k=>k.category===kwActiveFilter);
+  const container=document.getElementById('kwListContainer');
+  if(!list.length){container.innerHTML='<span class="kw-empty">No keywords found.</span>';return}
+  // group by category
+  const groups={};
+  list.forEach(k=>{if(!groups[k.category])groups[k.category]=[];groups[k.category].push(k)});
+  let html='';
+  for(const cat in groups){
+    html+=`<div class="kw-section"><div class="kw-section-title">${cat}</div><div class="kw-tags">`;
+    groups[cat].forEach(k=>{
+      html+=`<span class="kw-tag priority-${k.priority}" data-id="${k.id}">
+        ${k.word}
+        <span class="kw-edit" title="Edit" onclick="startKwEdit(${k.id})">✏️</span>
+        <span class="kw-del" title="Delete" onclick="deleteKeyword(${k.id})">×</span>
+      </span>`;
+    });
+    html+=`</div></div>`;
+  }
+  container.innerHTML=html;
+}
+
+function saveKeyword(){
+  const word=document.getElementById('kwInput').value.trim();
+  const cat=document.getElementById('kwCategory').value;
+  const pri=document.getElementById('kwPriority').value;
+  if(!word){showKwMsg('Enter a keyword.','err');return}
+  if(kwEditId){
+    db.run("UPDATE keywords SET word=?,category=?,priority=? WHERE id=?",[word,cat,pri,kwEditId]);
+    kwEditId=null;
+    document.getElementById('kwFormTitle').textContent='➕ Add Keyword';
+    document.getElementById('kwSaveBtn').textContent='+ Add';
+    document.getElementById('kwCancelBtn').style.display='none';
+    showKwMsg('Keyword updated!','ok');
+  } else {
+    db.run("INSERT INTO keywords(word,category,priority)VALUES(?,?,?)",[word,cat,pri]);
+    showKwMsg('Keyword added!','ok');
+  }
+  document.getElementById('kwInput').value='';
+  loadKeywords();
+  setTimeout(()=>showKwMsg('',''),2000);
+}
+
+function startKwEdit(id){
+  const kw=keywords.find(k=>k.id===id);
+  if(!kw)return;
+  kwEditId=id;
+  document.getElementById('kwInput').value=kw.word;
+  document.getElementById('kwCategory').value=kw.category;
+  document.getElementById('kwPriority').value=kw.priority;
+  document.getElementById('kwFormTitle').textContent='✏️ Edit Keyword';
+  document.getElementById('kwSaveBtn').textContent='Save';
+  document.getElementById('kwCancelBtn').style.display='';
+  document.getElementById('kwInput').focus();
+}
+
+function cancelKwEdit(){
+  kwEditId=null;
+  document.getElementById('kwInput').value='';
+  document.getElementById('kwFormTitle').textContent='➕ Add Keyword';
+  document.getElementById('kwSaveBtn').textContent='+ Add';
+  document.getElementById('kwCancelBtn').style.display='none';
+}
+
+function deleteKeyword(id){
+  db.run("DELETE FROM keywords WHERE id=?",[id]);
+  if(kwEditId===id)cancelKwEdit();
+  loadKeywords();
+}
+
+function showKwMsg(text,type){
+  const el=document.getElementById('kwMsg');
+  el.textContent=text;el.className='kw-msg '+(text?type:'');el.style.display=text?'block':'none';
+}
+
+/* ---- CONTACTS ---- */
 function loadContacts(){
   if(!db)return;
   const r=db.exec("SELECT id,name,phone,category FROM contacts ORDER BY id DESC");
   contacts=r.length?r[0].values.map(row=>({id:row[0],name:row[1],phone:row[2],category:row[3]})):[];
   renderContacts();
 }
-
 function renderContacts(){
   const q=(document.getElementById('ctSearch')||{}).value||'';
-  const filtered=contacts.filter(c=>
-    c.name.toLowerCase().includes(q.toLowerCase())||
-    c.phone.includes(q)||
-    c.category.toLowerCase().includes(q.toLowerCase())
-  );
+  const filtered=contacts.filter(c=>c.name.toLowerCase().includes(q.toLowerCase())||c.phone.includes(q)||c.category.toLowerCase().includes(q.toLowerCase()));
   const grid=document.getElementById('contactsGrid');
   const empty=document.getElementById('ctEmpty');
   if(!filtered.length){grid.innerHTML='';empty.style.display='block';return}
@@ -440,7 +561,6 @@ function renderContacts(){
       <span class="cc-cat">${c.category}</span>
     </div>`).join('');
 }
-
 function addContact(){
   const name=document.getElementById('ctName').value.trim();
   const phone=document.getElementById('ctPhone').value.trim();
@@ -448,47 +568,20 @@ function addContact(){
   if(!name||!phone||!category){showCtMsg('Please fill in all fields.','err');return}
   if(!/^\+?[\d\s\-]{7,15}$/.test(phone)){showCtMsg('Enter a valid phone number.','err');return}
   db.run("INSERT INTO contacts(name,phone,category)VALUES(?,?,?)",[name,phone,category]);
-  document.getElementById('ctName').value='';
-  document.getElementById('ctPhone').value='';
-  document.getElementById('ctCategory').value='';
-  showCtMsg('Contact saved successfully!','ok');
-  loadContacts();
-  setTimeout(()=>showCtMsg('',''),2500);
+  document.getElementById('ctName').value='';document.getElementById('ctPhone').value='';document.getElementById('ctCategory').value='';
+  showCtMsg('Contact saved!','ok');loadContacts();setTimeout(()=>showCtMsg('',''),2500);
 }
+function deleteContact(id){db.run("DELETE FROM contacts WHERE id=?",[id]);loadContacts()}
+function showCtMsg(text,type){const el=document.getElementById('ctMsg');el.textContent=text;el.className='msg '+(text?type:'');el.style.display=text?'block':'none'}
 
-function deleteContact(id){
-  db.run("DELETE FROM contacts WHERE id=?",[id]);
-  loadContacts();
-}
-
-function showCtMsg(text,type){
-  const el=document.getElementById('ctMsg');
-  el.textContent=text;el.className='msg '+(text?type:'');el.style.display=text?'block':'none';
-}
-
-function addKeyword(){
-  const val=document.getElementById('kwInput').value.trim();
-  const pri=document.getElementById('kwPriority').value;
-  if(!val)return;
-  const tag=document.createElement('span');
-  tag.className=`kw-tag priority-${pri}`;
-  tag.innerHTML=`${val} <span class="del" onclick="removeKw(this)">×</span>`;
-  document.getElementById('kwTagsContainer').appendChild(tag);
-  document.getElementById('kwInput').value='';
-}
-function removeKw(el){el.parentElement.remove()}
-
+/* ---- NAV ---- */
 function switchModule(name){
   document.querySelectorAll('.module').forEach(m=>m.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('module-'+name).classList.add('active');
   document.getElementById('nav-'+name).classList.add('active');
 }
-
-function showPage(id){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active')}
 function openModal(tab){document.getElementById('authOverlay').classList.add('open');switchTab(tab)}
 function closeModal(){document.getElementById('authOverlay').classList.remove('open');clearForms()}
 function switchTab(t){
@@ -500,10 +593,7 @@ function switchTab(t){
   document.getElementById('modalSub').textContent=t==='login'?'Sign in to your account':'Join Thotta R. Rajagopal Chettiar Charity';
   clearForms();
 }
-function clearForms(){
-  ['loginEmail','loginPass','regName','regEmail','regPass'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
-  showMsg('loginMsg','','');showMsg('registerMsg','','');
-}
+function clearForms(){['loginEmail','loginPass','regName','regEmail','regPass'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});showMsg('loginMsg','','');showMsg('registerMsg','','');}
 function showMsg(id,text,type){const el=document.getElementById(id);el.textContent=text;el.className='msg '+(text?type:'');el.style.display=text?'block':'none';}
 function hash(s){let h=0;for(let i=0;i<s.length;i++)h=(Math.imul(31,h)+s.charCodeAt(i))|0;return h.toString(16)}
 
@@ -520,7 +610,6 @@ function doLogin(){
     setTimeout(()=>{closeModal();enterDashboard()},700);
   }catch(e){showMsg('loginMsg','Error: '+e.message,'err')}
 }
-
 function doRegister(){
   const name=document.getElementById('regName').value.trim();
   const email=document.getElementById('regEmail').value.trim();
@@ -540,16 +629,13 @@ function doRegister(){
     setTimeout(()=>{closeModal();enterDashboard()},700);
   }catch(e){showMsg('registerMsg','Error: '+e.message,'err')}
 }
-
 function enterDashboard(){
   document.getElementById('navLinksPublic').style.display='none';
   document.getElementById('navUserArea').style.display='flex';
   document.getElementById('userGreet').textContent=currentUser.name;
   document.getElementById('sidebarUser').textContent=currentUser.name;
-  switchModule('activity');
-  showPage('dashPage');
+  switchModule('activity');showPage('dashPage');
 }
-
 function logout(){
   currentUser=null;
   document.getElementById('navLinksPublic').style.display='flex';

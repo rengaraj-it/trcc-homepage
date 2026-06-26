@@ -291,15 +291,18 @@
           <h3 id="kwFormTitle">➕ Add Keyword</h3>
           <div class="kw-form-row">
             <input type="text" id="kwInput" placeholder="Keyword…"/>
-            <select id="kwCategory">
+            <select id="kwCategory" onchange="kwCategoryChange(this)">
               <option value="Education">📚 Education</option>
               <option value="Healthcare">🏥 Healthcare</option>
               <option value="Environment">🌱 Environment</option>
               <option value="Women Welfare">👩 Women Welfare</option>
               <option value="Livelihood">🌾 Livelihood</option>
               <option value="Community">🤝 Community</option>
+              <option value="Property Tax">🏠 Property Tax</option>
               <option value="General">🏷️ General</option>
+              <option value="__new__">➕ New Category…</option>
             </select>
+            <input type="text" id="kwNewCategory" placeholder="New category name…" style="display:none;flex:1;min-width:140px"/>
             <select id="kwPriority">
               <option value="high">🔴 High</option>
               <option value="medium" selected>🟡 Medium</option>
@@ -320,6 +323,7 @@
           <button class="kw-filter-btn" onclick="kwSetFilter('Women Welfare',this)">👩 Women Welfare</button>
           <button class="kw-filter-btn" onclick="kwSetFilter('Livelihood',this)">🌾 Livelihood</button>
           <button class="kw-filter-btn" onclick="kwSetFilter('Community',this)">🤝 Community</button>
+          <button class="kw-filter-btn" onclick="kwSetFilter('Property Tax',this)">🏠 Property Tax</button>
           <button class="kw-filter-btn" onclick="kwSetFilter('General',this)">🏷️ General</button>
         </div>
 
@@ -448,7 +452,44 @@ async function initDB(){
   }catch(e){console.error(e)}
 }
 
-/* ---- KEYWORDS ---- */
+function kwCategoryChange(sel){
+  const ni=document.getElementById('kwNewCategory');
+  ni.style.display=sel.value==='__new__'?'':'none';
+  if(sel.value==='__new__')ni.focus();
+}
+
+function kwGetCategory(){
+  const sel=document.getElementById('kwCategory');
+  if(sel.value==='__new__'){
+    const name=document.getElementById('kwNewCategory').value.trim();
+    return name||null;
+  }
+  return sel.value;
+}
+
+function kwAddCategoryToUI(cat){
+  // add to select if not exists
+  const sel=document.getElementById('kwCategory');
+  const exists=[...sel.options].some(o=>o.value===cat);
+  if(!exists){
+    const opt=document.createElement('option');
+    opt.value=cat;opt.textContent='🏷️ '+cat;
+    sel.insertBefore(opt,sel.querySelector('option[value="__new__"]'));
+  }
+  sel.value=cat;
+  document.getElementById('kwNewCategory').style.display='none';
+  document.getElementById('kwNewCategory').value='';
+  // add to filter bar if not exists
+  const bar=document.getElementById('kwFilterBar');
+  const already=[...bar.querySelectorAll('.kw-filter-btn')].some(b=>b.textContent.trim().includes(cat));
+  if(!already){
+    const btn=document.createElement('button');
+    btn.className='kw-filter-btn';
+    btn.textContent='🏷️ '+cat;
+    btn.onclick=function(){kwSetFilter(cat,this)};
+    bar.insertBefore(btn,bar.querySelector('.kw-filter-btn:last-child'));
+  }
+}
 function loadKeywords(){
   if(!db)return;
   const r=db.exec("SELECT id,word,category,priority FROM keywords ORDER BY category,priority DESC,word");
@@ -487,9 +528,11 @@ function renderKeywords(){
 
 function saveKeyword(){
   const word=document.getElementById('kwInput').value.trim();
-  const cat=document.getElementById('kwCategory').value;
+  const cat=kwGetCategory();
   const pri=document.getElementById('kwPriority').value;
   if(!word){showKwMsg('Enter a keyword.','err');return}
+  if(!cat){showKwMsg('Enter a category name.','err');return}
+  kwAddCategoryToUI(cat);
   if(kwEditId){
     db.run("UPDATE keywords SET word=?,category=?,priority=? WHERE id=?",[word,cat,pri,kwEditId]);
     kwEditId=null;

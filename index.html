@@ -178,6 +178,23 @@
 
   footer{background:#fff;border-top:1px solid var(--border);padding:1.5rem 2rem;text-align:center;font-size:13px;color:var(--muted)}
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  /* TIMELINE */
+  .tl-entry{display:flex;gap:14px;margin-bottom:18px;position:relative}
+  .tl-entry::before{content:'';position:absolute;left:17px;top:36px;bottom:-18px;width:2px;background:var(--border)}
+  .tl-entry:last-child::before{display:none}
+  .tl-dot{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;margin-top:4px;border:2px solid var(--border);background:var(--card)}
+  .tl-body{flex:1;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+  .tl-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+  .tl-title{font-size:14px;font-weight:700;color:var(--text)}
+  .tl-date{font-size:12px;color:var(--muted);white-space:nowrap}
+  .tl-cat{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;margin-top:5px;display:inline-block}
+  .tl-desc{font-size:13px;color:var(--muted);margin-top:6px}
+  .tl-meta{font-size:12px;color:var(--accent);margin-top:4px;font-weight:500}
+  .tl-actions{display:flex;gap:6px;margin-top:8px}
+  .tl-btn{font-size:12px;padding:4px 10px;border-radius:7px;border:1px solid var(--border);background:transparent;cursor:pointer;font-family:var(--font);color:var(--muted)}
+  .tl-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .tl-btn.del:hover{border-color:var(--danger);color:var(--danger)}
+  .tl-empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:14px}
 </style>
 </head>
 <body>
@@ -251,6 +268,9 @@
       </button>
       <button class="nav-item" onclick="switchModule('keywords')" id="nav-keywords">
         <span class="icon">🏷️</span> Keywords
+      </button>
+      <button class="nav-item" onclick="switchModule('timeline')" id="nav-timeline">
+        <span class="icon">📅</span> Timeline
       </button>
       <button class="nav-item" onclick="switchModule('contacts')" id="nav-contacts">
         <span class="icon">👥</span> Contacts
@@ -337,6 +357,81 @@
         <!-- KEYWORD LIST grouped by category -->
         <div style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem">
           <div id="kwListContainer"><span class="kw-empty">No keywords yet.</span></div>
+        </div>
+      </div>
+
+      <!-- TIMELINE MODULE -->
+      <div class="module" id="module-timeline">
+        <div class="mod-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+          <div>
+            <div class="mod-title">Timeline</div>
+            <div class="mod-sub">Chronological activities of the organization</div>
+          </div>
+          <button class="btn-primary" onclick="openTLModal()">+ Add Activity</button>
+        </div>
+
+        <!-- Filters -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center">
+          <select id="tlCatFilter" onchange="renderTimeline()" style="padding:7px 10px;border-radius:8px;border:1px solid var(--border);font-size:13px;font-family:var(--font);color:var(--text);background:var(--card)">
+            <option value="All">All Categories</option>
+            <option>Bank Transaction</option><option>Court Case</option><option>Event</option>
+            <option>Donation</option><option>Money Order</option><option>General Activity</option>
+            <option>Meeting</option><option>Legal Notice</option>
+          </select>
+          <input type="date" id="tlFromDate" onchange="renderTimeline()" style="padding:7px 10px;border-radius:8px;border:1px solid var(--border);font-size:13px;font-family:var(--font);color:var(--text);background:var(--card)">
+          <input type="date" id="tlToDate" onchange="renderTimeline()" style="padding:7px 10px;border-radius:8px;border:1px solid var(--border);font-size:13px;font-family:var(--font);color:var(--text);background:var(--card)">
+          <button onclick="clearTLFilters()" style="padding:7px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;font-size:13px;cursor:pointer;color:var(--muted);font-family:var(--font)">Clear</button>
+          <select id="tlSortOrder" onchange="renderTimeline()" style="padding:7px 10px;border-radius:8px;border:1px solid var(--border);font-size:13px;font-family:var(--font);color:var(--text);background:var(--card);margin-left:auto">
+            <option value="desc">Newest First</option>
+            <option value="asc">Oldest First</option>
+          </select>
+        </div>
+
+        <!-- Timeline List -->
+        <div id="tlList"></div>
+      </div>
+
+      <!-- TIMELINE MODAL -->
+      <div id="tlModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:1000;align-items:center;justify-content:center">
+        <div style="background:var(--card);border-radius:16px;padding:28px;width:100%;max-width:480px;margin:16px;box-shadow:0 8px 32px rgba(0,0,0,0.15);max-height:90vh;overflow-y:auto">
+          <div style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:20px" id="tlModalTitle">Add Activity</div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div>
+              <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:5px">DATE *</label>
+              <input id="tlDate" type="date" style="width:100%;padding:9px 12px;border-radius:9px;border:1px solid var(--border);font-size:14px;font-family:var(--font);color:var(--text);background:var(--bg);box-sizing:border-box">
+            </div>
+            <div>
+              <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:5px">TITLE *</label>
+              <input id="tlTitle" type="text" placeholder="Activity title" style="width:100%;padding:9px 12px;border-radius:9px;border:1px solid var(--border);font-size:14px;font-family:var(--font);color:var(--text);background:var(--bg);box-sizing:border-box">
+            </div>
+            <div>
+              <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:5px">CATEGORY *</label>
+              <select id="tlCat" style="width:100%;padding:9px 12px;border-radius:9px;border:1px solid var(--border);font-size:14px;font-family:var(--font);color:var(--text);background:var(--bg);box-sizing:border-box">
+                <option>General Activity</option><option>Bank Transaction</option><option>Court Case</option>
+                <option>Event</option><option>Donation</option><option>Money Order</option>
+                <option>Meeting</option><option>Legal Notice</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:5px">DESCRIPTION</label>
+              <textarea id="tlDesc" rows="3" placeholder="Details about this activity..." style="width:100%;padding:9px 12px;border-radius:9px;border:1px solid var(--border);font-size:14px;font-family:var(--font);color:var(--text);background:var(--bg);box-sizing:border-box;resize:vertical"></textarea>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div>
+                <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:5px">AMOUNT (₹)</label>
+                <input id="tlAmount" type="number" placeholder="Optional" style="width:100%;padding:9px 12px;border-radius:9px;border:1px solid var(--border);font-size:14px;font-family:var(--font);color:var(--text);background:var(--bg);box-sizing:border-box">
+              </div>
+              <div>
+                <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:5px">REF ID</label>
+                <input id="tlRef" type="text" placeholder="Optional" style="width:100%;padding:9px 12px;border-radius:9px;border:1px solid var(--border);font-size:14px;font-family:var(--font);color:var(--text);background:var(--bg);box-sizing:border-box">
+              </div>
+            </div>
+          </div>
+          <div id="tlModalMsg" style="font-size:13px;margin-top:12px;display:none"></div>
+          <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">
+            <button onclick="closeTLModal()" style="padding:9px 20px;border-radius:9px;border:1px solid var(--border);background:transparent;font-size:14px;cursor:pointer;font-family:var(--font);color:var(--muted)">Cancel</button>
+            <button onclick="saveTLEntry()" class="btn-primary">Save</button>
+          </div>
         </div>
       </div>
 
@@ -467,6 +562,7 @@ async function initDB(){
     db.run(`CREATE TABLE IF NOT EXISTS contact_field_defs(id INTEGER PRIMARY KEY AUTOINCREMENT,field_name TEXT UNIQUE NOT NULL)`);
     db.run(`CREATE TABLE IF NOT EXISTS contact_field_values(id INTEGER PRIMARY KEY AUTOINCREMENT,contact_id INTEGER NOT NULL,field_name TEXT NOT NULL,field_value TEXT NOT NULL)`);
     db.run(`CREATE TABLE IF NOT EXISTS keywords(id INTEGER PRIMARY KEY AUTOINCREMENT,word TEXT NOT NULL,category TEXT NOT NULL,priority TEXT NOT NULL)`);
+    db.run(`CREATE TABLE IF NOT EXISTS timeline(id INTEGER PRIMARY KEY AUTOINCREMENT,entry_date TEXT NOT NULL,title TEXT NOT NULL,category TEXT NOT NULL,description TEXT,amount REAL,ref_id TEXT)`);
     const s=db.exec("SELECT COUNT(*) FROM users");
     if(s[0].values[0][0]===0){
       db.run("INSERT INTO users(name,email,password)VALUES(?,?,?)",["Demo User","demo@trcc.org","5c7bd16f"]);
@@ -500,7 +596,7 @@ async function initDB(){
       db.run("INSERT INTO keywords(word,category,priority)VALUES(?,?,?)","Skill Development","Livelihood","medium");
       db.run("INSERT INTO keywords(word,category,priority)VALUES(?,?,?)","Volunteer Drive","Community","low");
     }
-    loadContacts();loadKeywords();
+    loadContacts();loadKeywords();loadTimeline();
   }catch(e){console.error(e)}
 }
 
@@ -844,6 +940,109 @@ function saveEditContact(){
   ctEditFields.forEach(f=>{if(f.value.trim())db.run("INSERT INTO contact_field_values(contact_id,field_name,field_value)VALUES(?,?,?)",[ctEditId,f.name,f.value.trim()])});
   closeCtModal();
   loadContacts();
+}
+
+/* ---- TIMELINE ---- */
+const TL_CAT_ICON={'Bank Transaction':'🏦','Court Case':'⚖️','Event':'🎉','Donation':'💝','Money Order':'📮','General Activity':'📌','Meeting':'🤝','Legal Notice':'📜'};
+const TL_CAT_COLOR={'Bank Transaction':'#dbeafe','Court Case':'#fef3c7','Event':'#d1fae5','Donation':'#ede9fe','Money Order':'#fce7f3','General Activity':'#f3f4f6','Meeting':'#e0f2fe','Legal Notice':'#fee2e2'};
+const TL_CAT_TEXT={'Bank Transaction':'#1d4ed8','Court Case':'#92400e','Event':'#065f46','Donation':'#5b21b6','Money Order':'#9d174d','General Activity':'#374151','Meeting':'#0369a1','Legal Notice':'#991b1b'};
+
+let tlEditId=null, timelineEntries=[];
+
+function loadTimeline(){
+  const r=db.exec('SELECT id,entry_date,title,category,description,amount,ref_id FROM timeline ORDER BY entry_date DESC,id DESC');
+  timelineEntries=r.length?r[0].values.map(v=>({id:v[0],date:v[1],title:v[2],category:v[3],desc:v[4],amount:v[5],ref:v[6]})):[];
+  renderTimeline();
+}
+
+function renderTimeline(){
+  const cat=document.getElementById('tlCatFilter').value;
+  const from=document.getElementById('tlFromDate').value;
+  const to=document.getElementById('tlToDate').value;
+  const sort=document.getElementById('tlSortOrder').value;
+  let list=[...timelineEntries];
+  if(cat!=='All')list=list.filter(e=>e.category===cat);
+  if(from)list=list.filter(e=>e.date>=from);
+  if(to)list=list.filter(e=>e.date<=to);
+  if(sort==='asc')list.sort((a,b)=>a.date.localeCompare(b.date)||a.id-b.id);
+  const el=document.getElementById('tlList');
+  if(!list.length){el.innerHTML='<div class="tl-empty">📅 No activities found. Add your first entry!</div>';return;}
+  el.innerHTML=list.map(e=>{
+    const icon=TL_CAT_ICON[e.category]||'📌';
+    const bg=TL_CAT_COLOR[e.category]||'#f3f4f6';
+    const tc=TL_CAT_TEXT[e.category]||'#374151';
+    const fmtDate=new Date(e.date+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+    return `<div class="tl-entry">
+      <div class="tl-dot" style="background:${bg};border-color:${bg}">${icon}</div>
+      <div class="tl-body">
+        <div class="tl-top">
+          <div class="tl-title">${e.title}</div>
+          <div class="tl-date">${fmtDate}</div>
+        </div>
+        <span class="tl-cat" style="background:${bg};color:${tc}">${e.category}</span>
+        ${e.desc?`<div class="tl-desc">${e.desc}</div>`:''}
+        ${e.amount||e.ref?`<div class="tl-meta">${e.amount?'₹'+Number(e.amount).toLocaleString('en-IN'):''}${e.amount&&e.ref?' · ':''}${e.ref?'Ref: '+e.ref:''}</div>`:''}
+        <div class="tl-actions">
+          <button class="tl-btn" onclick="editTLEntry(${e.id})">✏️ Edit</button>
+          <button class="tl-btn del" onclick="deleteTLEntry(${e.id})">🗑️ Delete</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function clearTLFilters(){
+  document.getElementById('tlCatFilter').value='All';
+  document.getElementById('tlFromDate').value='';
+  document.getElementById('tlToDate').value='';
+  document.getElementById('tlSortOrder').value='desc';
+  renderTimeline();
+}
+
+function openTLModal(id=null){
+  tlEditId=id;
+  document.getElementById('tlModalTitle').textContent=id?'Edit Activity':'Add Activity';
+  if(id){
+    const e=timelineEntries.find(x=>x.id===id);
+    document.getElementById('tlDate').value=e.date;
+    document.getElementById('tlTitle').value=e.title;
+    document.getElementById('tlCat').value=e.category;
+    document.getElementById('tlDesc').value=e.desc||'';
+    document.getElementById('tlAmount').value=e.amount||'';
+    document.getElementById('tlRef').value=e.ref||'';
+  } else {
+    document.getElementById('tlDate').value=new Date().toISOString().split('T')[0];
+    ['tlTitle','tlDesc','tlAmount','tlRef'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('tlCat').value='General Activity';
+  }
+  document.getElementById('tlModal').style.display='flex';
+}
+
+function closeTLModal(){document.getElementById('tlModal').style.display='none';}
+
+function saveTLEntry(){
+  const date=document.getElementById('tlDate').value.trim();
+  const title=document.getElementById('tlTitle').value.trim();
+  const cat=document.getElementById('tlCat').value;
+  const desc=document.getElementById('tlDesc').value.trim();
+  const amount=document.getElementById('tlAmount').value.trim()||null;
+  const ref=document.getElementById('tlRef').value.trim()||null;
+  const msg=document.getElementById('tlModalMsg');
+  if(!date||!title){msg.textContent='Date and Title are required.';msg.style.display='block';msg.style.color='var(--danger)';return;}
+  if(tlEditId){
+    db.run('UPDATE timeline SET entry_date=?,title=?,category=?,description=?,amount=?,ref_id=? WHERE id=?',[date,title,cat,desc,amount,ref,tlEditId]);
+  } else {
+    db.run('INSERT INTO timeline(entry_date,title,category,description,amount,ref_id)VALUES(?,?,?,?,?,?)',[date,title,cat,desc,amount,ref]);
+  }
+  closeTLModal();loadTimeline();
+}
+
+function editTLEntry(id){openTLModal(id);}
+
+function deleteTLEntry(id){
+  if(!confirm('Delete this activity?'))return;
+  db.run('DELETE FROM timeline WHERE id=?',[id]);
+  loadTimeline();
 }
 
 /* ---- NAV ---- */

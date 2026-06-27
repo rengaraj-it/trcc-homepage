@@ -374,10 +374,8 @@
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center">
           <select id="tlCatFilter" onchange="renderTimeline()" style="padding:7px 10px;border-radius:8px;border:1px solid var(--border);font-size:13px;font-family:var(--font);color:var(--text);background:var(--card)">
             <option value="All">All Categories</option>
-            <option>Bank Transaction</option><option>Court Case</option><option>Event</option>
-            <option>Donation</option><option>Money Order</option><option>General Activity</option>
-            <option>Meeting</option><option>Legal Notice</option>
           </select>
+          <button onclick="openTLCatModal()" style="padding:7px 12px;border-radius:8px;border:1px solid var(--accent);background:transparent;font-size:13px;cursor:pointer;color:var(--accent);font-family:var(--font);white-space:nowrap">⚙️ Categories</button>
           <input type="date" id="tlFromDate" onchange="renderTimeline()" style="padding:7px 10px;border-radius:8px;border:1px solid var(--border);font-size:13px;font-family:var(--font);color:var(--text);background:var(--card)">
           <input type="date" id="tlToDate" onchange="renderTimeline()" style="padding:7px 10px;border-radius:8px;border:1px solid var(--border);font-size:13px;font-family:var(--font);color:var(--text);background:var(--card)">
           <button onclick="clearTLFilters()" style="padding:7px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;font-size:13px;cursor:pointer;color:var(--muted);font-family:var(--font)">Clear</button>
@@ -407,9 +405,6 @@
             <div>
               <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:5px">CATEGORY *</label>
               <select id="tlCat" style="width:100%;padding:9px 12px;border-radius:9px;border:1px solid var(--border);font-size:14px;font-family:var(--font);color:var(--text);background:var(--bg);box-sizing:border-box">
-                <option>General Activity</option><option>Bank Transaction</option><option>Court Case</option>
-                <option>Event</option><option>Donation</option><option>Money Order</option>
-                <option>Meeting</option><option>Legal Notice</option>
               </select>
             </div>
             <div>
@@ -432,6 +427,25 @@
             <button onclick="closeTLModal()" style="padding:9px 20px;border-radius:9px;border:1px solid var(--border);background:transparent;font-size:14px;cursor:pointer;font-family:var(--font);color:var(--muted)">Cancel</button>
             <button onclick="saveTLEntry()" class="btn-primary">Save</button>
           </div>
+        </div>
+      </div>
+
+      <!-- TIMELINE CATEGORY MODAL -->
+      <div id="tlCatModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:1001;align-items:flex-start;justify-content:center;padding-top:60px">
+        <div style="background:var(--card);border-radius:16px;padding:28px;width:100%;max-width:460px;margin:0 16px;box-shadow:0 8px 32px rgba(0,0,0,0.15);max-height:80vh;display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+            <div style="font-size:17px;font-weight:700;color:var(--text)">Manage Categories</div>
+            <button onclick="closeTLCatModal()" style="background:transparent;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1">×</button>
+          </div>
+          <!-- Add/Edit form -->
+          <div style="display:flex;gap:8px;margin-bottom:18px">
+            <input id="tlCatIcon" type="text" maxlength="2" placeholder="🏷️" style="width:52px;padding:9px;border-radius:9px;border:1px solid var(--border);font-size:18px;text-align:center;font-family:var(--font);color:var(--text);background:var(--bg);flex-shrink:0">
+            <input id="tlCatName" type="text" placeholder="Category name" style="flex:1;padding:9px 12px;border-radius:9px;border:1px solid var(--border);font-size:14px;font-family:var(--font);color:var(--text);background:var(--bg)">
+            <button onclick="saveTLCat()" id="tlCatSaveBtn" style="padding:9px 16px;border-radius:9px;background:var(--accent);color:#fff;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap">Add</button>
+          </div>
+          <div id="tlCatMsg" style="font-size:13px;margin-bottom:10px;display:none;color:var(--danger)"></div>
+          <!-- Category list -->
+          <div id="tlCatList" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px"></div>
         </div>
       </div>
 
@@ -563,6 +577,12 @@ async function initDB(){
     db.run(`CREATE TABLE IF NOT EXISTS contact_field_values(id INTEGER PRIMARY KEY AUTOINCREMENT,contact_id INTEGER NOT NULL,field_name TEXT NOT NULL,field_value TEXT NOT NULL)`);
     db.run(`CREATE TABLE IF NOT EXISTS keywords(id INTEGER PRIMARY KEY AUTOINCREMENT,word TEXT NOT NULL,category TEXT NOT NULL,priority TEXT NOT NULL)`);
     db.run(`CREATE TABLE IF NOT EXISTS timeline(id INTEGER PRIMARY KEY AUTOINCREMENT,entry_date TEXT NOT NULL,title TEXT NOT NULL,category TEXT NOT NULL,description TEXT,amount REAL,ref_id TEXT)`);
+    db.run(`CREATE TABLE IF NOT EXISTS timeline_categories(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL UNIQUE,icon TEXT NOT NULL DEFAULT '📌')`);
+    const tcCount=db.exec('SELECT COUNT(*) FROM timeline_categories');
+    if(!tcCount[0].values[0][0]){
+      const seeds=[['General Activity','📌'],['Bank Transaction','🏦'],['Court Case','⚖️'],['Event','🎉'],['Donation','💝'],['Money Order','📮'],['Meeting','🤝'],['Legal Notice','📜'],['Festival','🪔'],['Tenant','🏠']];
+      seeds.forEach(([n,i])=>db.run('INSERT INTO timeline_categories(name,icon)VALUES(?,?)',[n,i]));
+    }
     const s=db.exec("SELECT COUNT(*) FROM users");
     if(s[0].values[0][0]===0){
       db.run("INSERT INTO users(name,email,password)VALUES(?,?,?)",["Demo User","demo@trcc.org","5c7bd16f"]);
@@ -943,13 +963,99 @@ function saveEditContact(){
 }
 
 /* ---- TIMELINE ---- */
-const TL_CAT_ICON={'Bank Transaction':'🏦','Court Case':'⚖️','Event':'🎉','Donation':'💝','Money Order':'📮','General Activity':'📌','Meeting':'🤝','Legal Notice':'📜'};
-const TL_CAT_COLOR={'Bank Transaction':'#dbeafe','Court Case':'#fef3c7','Event':'#d1fae5','Donation':'#ede9fe','Money Order':'#fce7f3','General Activity':'#f3f4f6','Meeting':'#e0f2fe','Legal Notice':'#fee2e2'};
-const TL_CAT_TEXT={'Bank Transaction':'#1d4ed8','Court Case':'#92400e','Event':'#065f46','Donation':'#5b21b6','Money Order':'#9d174d','General Activity':'#374151','Meeting':'#0369a1','Legal Notice':'#991b1b'};
+/* ---- TIMELINE CATEGORIES ---- */
+let tlCategories=[], tlCatEditId=null;
 
+function loadTLCategories(){
+  const r=db.exec('SELECT id,name,icon FROM timeline_categories ORDER BY name');
+  tlCategories=r.length?r[0].values.map(v=>({id:v[0],name:v[1],icon:v[2]})):[];
+  populateTLCatDropdowns();
+}
+
+function populateTLCatDropdowns(){
+  const opts=tlCategories.map(c=>`<option value="${c.name}">${c.icon} ${c.name}</option>`).join('');
+  const filterEl=document.getElementById('tlCatFilter');
+  const formEl=document.getElementById('tlCat');
+  if(filterEl){
+    const cur=filterEl.value;
+    filterEl.innerHTML='<option value="All">All Categories</option>'+opts;
+    if(cur)filterEl.value=cur;
+  }
+  if(formEl){
+    const cur=formEl.value;
+    formEl.innerHTML=opts;
+    if(cur)formEl.value=cur;
+  }
+}
+
+function openTLCatModal(){
+  tlCatEditId=null;
+  document.getElementById('tlCatIcon').value='';
+  document.getElementById('tlCatName').value='';
+  document.getElementById('tlCatSaveBtn').textContent='Add';
+  document.getElementById('tlCatMsg').style.display='none';
+  renderTLCatList();
+  document.getElementById('tlCatModal').style.display='flex';
+}
+
+function closeTLCatModal(){
+  document.getElementById('tlCatModal').style.display='none';
+  tlCatEditId=null;
+}
+
+function renderTLCatList(){
+  const el=document.getElementById('tlCatList');
+  if(!tlCategories.length){el.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px">No categories yet.</div>';return;}
+  el.innerHTML=tlCategories.map(c=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:var(--bg)">
+      <span style="font-size:20px;width:28px;text-align:center">${c.icon}</span>
+      <span style="flex:1;font-size:14px;color:var(--text);font-weight:500">${c.name}</span>
+      <button onclick="editTLCat(${c.id})" style="padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:transparent;font-size:12px;cursor:pointer;font-family:var(--font);color:var(--muted)">✏️</button>
+      <button onclick="deleteTLCat(${c.id},'${c.name.replace(/'/g,"\'")}')" style="padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:transparent;font-size:12px;cursor:pointer;font-family:var(--font);color:var(--muted)">🗑️</button>
+    </div>`).join('');
+}
+
+function editTLCat(id){
+  const c=tlCategories.find(x=>x.id===id);
+  if(!c)return;
+  tlCatEditId=id;
+  document.getElementById('tlCatIcon').value=c.icon;
+  document.getElementById('tlCatName').value=c.name;
+  document.getElementById('tlCatSaveBtn').textContent='Update';
+}
+
+function saveTLCat(){
+  const icon=document.getElementById('tlCatIcon').value.trim()||'📌';
+  const name=document.getElementById('tlCatName').value.trim();
+  const msg=document.getElementById('tlCatMsg');
+  if(!name){msg.textContent='Category name is required.';msg.style.display='block';return;}
+  msg.style.display='none';
+  if(tlCatEditId){
+    db.run('UPDATE timeline_categories SET name=?,icon=? WHERE id=?',[name,icon,tlCatEditId]);
+    tlCatEditId=null;
+    document.getElementById('tlCatSaveBtn').textContent='Add';
+  } else {
+    try{db.run('INSERT INTO timeline_categories(name,icon)VALUES(?,?)',[name,icon]);}
+    catch(e){msg.textContent='Category already exists.';msg.style.display='block';return;}
+  }
+  document.getElementById('tlCatIcon').value='';
+  document.getElementById('tlCatName').value='';
+  loadTLCategories();
+  renderTLCatList();
+}
+
+function deleteTLCat(id,name){
+  if(!confirm(`Delete category "${name}"?\nExisting activities using it will keep their category label.`))return;
+  db.run('DELETE FROM timeline_categories WHERE id=?',[id]);
+  loadTLCategories();
+  renderTLCatList();
+}
+
+/* ---- TIMELINE ---- */
 let tlEditId=null, timelineEntries=[];
 
 function loadTimeline(){
+  loadTLCategories();
   const r=db.exec('SELECT id,entry_date,title,category,description,amount,ref_id FROM timeline ORDER BY entry_date DESC,id DESC');
   timelineEntries=r.length?r[0].values.map(v=>({id:v[0],date:v[1],title:v[2],category:v[3],desc:v[4],amount:v[5],ref:v[6]})):[];
   renderTimeline();
@@ -966,20 +1072,22 @@ function renderTimeline(){
   if(to)list=list.filter(e=>e.date<=to);
   if(sort==='asc')list.sort((a,b)=>a.date.localeCompare(b.date)||a.id-b.id);
   const el=document.getElementById('tlList');
-  if(!list.length){el.innerHTML='<div class="tl-empty">📅 No activities found. Add your first entry!</div>';return;}
+  if(!list.length){el.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--muted);font-size:14px">📅 No activities found. Add your first entry!</div>';return;}
+  const COLORS=['#dbeafe','#fef3c7','#d1fae5','#ede9fe','#fce7f3','#f3f4f6','#e0f2fe','#fee2e2','#fef9c3','#dcfce7','#ffe4e6','#e0e7ff'];
+  const TEXTS=['#1d4ed8','#92400e','#065f46','#5b21b6','#9d174d','#374151','#0369a1','#991b1b','#713f12','#14532d','#9f1239','#3730a3'];
+  const catColorMap={};
+  tlCategories.forEach((c,i)=>{catColorMap[c.name]={bg:COLORS[i%COLORS.length],tc:TEXTS[i%TEXTS.length],icon:c.icon};});
   el.innerHTML=list.map(e=>{
-    const icon=TL_CAT_ICON[e.category]||'📌';
-    const bg=TL_CAT_COLOR[e.category]||'#f3f4f6';
-    const tc=TL_CAT_TEXT[e.category]||'#374151';
+    const meta=catColorMap[e.category]||{bg:'#f3f4f6',tc:'#374151',icon:'📌'};
     const fmtDate=new Date(e.date+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
     return `<div class="tl-entry">
-      <div class="tl-dot" style="background:${bg};border-color:${bg}">${icon}</div>
+      <div class="tl-dot" style="background:${meta.bg};border-color:${meta.bg}">${meta.icon}</div>
       <div class="tl-body">
         <div class="tl-top">
           <div class="tl-title">${e.title}</div>
           <div class="tl-date">${fmtDate}</div>
         </div>
-        <span class="tl-cat" style="background:${bg};color:${tc}">${e.category}</span>
+        <span class="tl-cat" style="background:${meta.bg};color:${meta.tc}">${e.category}</span>
         ${e.desc?`<div class="tl-desc">${e.desc}</div>`:''}
         ${e.amount||e.ref?`<div class="tl-meta">${e.amount?'₹'+Number(e.amount).toLocaleString('en-IN'):''}${e.amount&&e.ref?' · ':''}${e.ref?'Ref: '+e.ref:''}</div>`:''}
         <div class="tl-actions">
@@ -1001,6 +1109,7 @@ function clearTLFilters(){
 
 function openTLModal(id=null){
   tlEditId=id;
+  populateTLCatDropdowns();
   document.getElementById('tlModalTitle').textContent=id?'Edit Activity':'Add Activity';
   if(id){
     const e=timelineEntries.find(x=>x.id===id);
@@ -1012,9 +1121,9 @@ function openTLModal(id=null){
     document.getElementById('tlRef').value=e.ref||'';
   } else {
     document.getElementById('tlDate').value=new Date().toISOString().split('T')[0];
-    ['tlTitle','tlDesc','tlAmount','tlRef'].forEach(id=>document.getElementById(id).value='');
-    document.getElementById('tlCat').value='General Activity';
+    ['tlTitle','tlDesc','tlAmount','tlRef'].forEach(i=>document.getElementById(i).value='');
   }
+  document.getElementById('tlModalMsg').style.display='none';
   document.getElementById('tlModal').style.display='flex';
 }
 

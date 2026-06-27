@@ -7,80 +7,71 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.min.js"></script>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
-  :root{
-    --bg:#f5f3ef;--surface:#ffffff;--surface2:#eef0f5;--border:#dde0ea;
-    --accent:#7c3aed;--accent2:#a855f7;--text:#1a1a2e;--muted:#64748b;
-    --success:#16a34a;--danger:#dc2626;--radius:12px;--font:'Inter',sans-serif
-  }
+  :root{--bg:#f5f3ef;--surface:#fff;--border:#dde0ea;--accent:#7c3aed;--accent2:#a855f7;--text:#1a1a2e;--muted:#64748b;--success:#16a34a;--danger:#dc2626;--radius:12px;--font:'Inter',sans-serif}
   body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
-  a{color:var(--accent);text-decoration:none}
   button{cursor:pointer;border:none;outline:none;font-family:var(--font)}
+  a{color:var(--accent);text-decoration:none}
 
   nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(255,255,255,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;height:64px;display:flex;align-items:center;justify-content:space-between}
   .logo-wrap{display:flex;align-items:center;gap:12px}
   .logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;flex-shrink:0}
   .logo-text{font-size:14px;font-weight:700;color:var(--text);line-height:1.2;max-width:280px}
   .nav-links{display:flex;gap:2rem;align-items:center}
-  .nav-links a{color:var(--muted);font-size:14px;font-weight:500;transition:color 0.2s}
-  .nav-links a:hover{color:var(--accent)}
-  .nav-btn{background:var(--accent);color:#fff;padding:8px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;border:none;font-family:var(--font)}
-  .nav-btn:hover{opacity:0.85}
+  .nav-links a{color:var(--muted);font-size:14px;font-weight:500}
+  .nav-btn{background:var(--accent);color:#fff;padding:8px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer}
   #navUserArea{display:flex;align-items:center;gap:12px}
   #userGreet{font-size:14px;color:var(--muted)}
-  #logoutBtn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:8px;font-size:13px;cursor:pointer;font-family:var(--font)}
+  #logoutBtn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:8px;font-size:13px;cursor:pointer}
   #logoutBtn:hover{border-color:var(--danger);color:var(--danger)}
 
   .page{display:none;min-height:100vh;padding-top:64px}
   .page.active{display:block}
 
-  .hero{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 64px);text-align:center;padding:3rem 2rem;background:linear-gradient(160deg,#f5f3ef 0%,#ede9fe 60%,#f5f3ef 100%);position:relative;overflow:hidden}
-  .hero::before{content:'';position:absolute;top:-100px;right:-100px;width:400px;height:400px;background:radial-gradient(circle,rgba(168,85,247,0.12),transparent 70%);pointer-events:none}
+  /* HERO */
+  .hero{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 64px);text-align:center;padding:3rem 2rem;background:linear-gradient(160deg,#f5f3ef 0%,#ede9fe 60%,#f5f3ef 100%)}
   .hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.2);padding:6px 18px;border-radius:999px;font-size:13px;color:var(--accent);margin-bottom:2rem;font-weight:500}
   .hero h1{font-size:clamp(2rem,5vw,3.5rem);font-weight:800;line-height:1.15;letter-spacing:-1.5px;margin-bottom:1rem;max-width:780px}
   .hero h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
   .org-subtitle{font-size:1.05rem;color:var(--accent);font-weight:600;margin-bottom:1rem}
   .hero p{font-size:1.05rem;color:var(--muted);max-width:560px;line-height:1.75;margin-bottom:2.5rem}
   .hero-btns{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center}
-  .btn-primary{background:var(--accent);color:#fff;padding:14px 32px;border-radius:10px;font-size:15px;font-weight:600;transition:all 0.2s;border:none;cursor:pointer;font-family:var(--font)}
-  .btn-primary:hover{background:#6d28d9;transform:translateY(-1px)}
-  .btn-outline{background:#fff;color:var(--accent);padding:14px 32px;border-radius:10px;font-size:15px;font-weight:600;border:1.5px solid var(--accent);transition:all 0.2s;cursor:pointer;font-family:var(--font)}
-  .btn-outline:hover{background:rgba(124,58,237,0.05)}
+  .btn-primary{background:var(--accent);color:#fff;padding:14px 32px;border-radius:10px;font-size:15px;font-weight:600;border:none;cursor:pointer}
+  .btn-outline{background:#fff;color:var(--accent);padding:14px 32px;border-radius:10px;font-size:15px;font-weight:600;border:1.5px solid var(--accent);cursor:pointer}
   .stats{background:#fff;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:3rem 2rem}
   .stats-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:2rem;text-align:center}
   .stat-num{font-size:2.4rem;font-weight:800;letter-spacing:-1px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
   .stat-label{font-size:14px;color:var(--muted);margin-top:4px}
   .features{padding:5rem 2rem;max-width:1100px;margin:0 auto}
   .section-label{font-size:12px;color:var(--accent);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:0.75rem}
-  .section-title{font-size:2rem;font-weight:800;letter-spacing:-0.5px;margin-bottom:0.75rem}
+  .section-title{font-size:2rem;font-weight:800;margin-bottom:0.75rem}
   .section-sub{color:var(--muted);font-size:1rem;line-height:1.7;max-width:500px;margin-bottom:3rem}
   .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem}
-  .card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:1.75rem;transition:all 0.2s}
-  .card:hover{border-color:rgba(124,58,237,0.35);box-shadow:0 4px 24px rgba(124,58,237,0.07)}
+  .card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:1.75rem}
   .card-icon{width:44px;height:44px;background:rgba(124,58,237,0.08);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:1rem}
   .card h3{font-size:16px;font-weight:700;margin-bottom:0.5rem}
   .card p{font-size:14px;color:var(--muted);line-height:1.65}
 
+  /* DASHBOARD */
   #dashPage{background:var(--bg)}
   .dash-layout{display:flex;min-height:calc(100vh - 64px)}
   .sidebar{width:220px;flex-shrink:0;background:#fff;border-right:1px solid var(--border);padding:1.5rem 1rem;display:flex;flex-direction:column;gap:4px}
   .sidebar-label{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1.2px;text-transform:uppercase;padding:0 0.75rem;margin:1rem 0 0.5rem}
-  .sidebar-label:first-child{margin-top:0}
-  .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;font-size:14px;font-weight:500;color:var(--muted);cursor:pointer;transition:all 0.18s;border:none;background:transparent;width:100%;text-align:left;font-family:var(--font)}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;font-size:14px;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:transparent;width:100%;text-align:left}
   .nav-item:hover{background:rgba(124,58,237,0.06);color:var(--accent)}
   .nav-item.active{background:rgba(124,58,237,0.1);color:var(--accent);font-weight:600}
   .nav-item .icon{font-size:17px;width:22px;text-align:center}
   .dash-content{flex:1;padding:2rem;overflow:auto}
-
   .module{display:none}
   .module.active{display:block}
   .mod-header{margin-bottom:1.5rem}
-  .mod-title{font-size:1.4rem;font-weight:800;color:var(--text)}
+  .mod-title{font-size:1.4rem;font-weight:800}
   .mod-sub{font-size:14px;color:var(--muted);margin-top:4px}
 
+  /* ACTIVITY */
   .metrics-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem}
   .metric{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem}
   .metric-label{font-size:13px;color:var(--muted);margin-bottom:8px}
-  .metric-val{font-size:1.75rem;font-weight:700;color:var(--text)}
+  .metric-val{font-size:1.75rem;font-weight:700}
   .metric-change{font-size:12px;color:var(--success);margin-top:4px}
   .act-table{background:#fff;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
   .act-table-hdr{padding:1.1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
@@ -96,66 +87,68 @@
   .badge-green{background:rgba(22,163,74,0.1);color:var(--success)}
   .badge-purple{background:rgba(124,58,237,0.1);color:var(--accent)}
 
-  /* KEYWORDS MODULE */
-  .kw-form-box{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1.5rem}
-  .kw-form-box h3{font-size:15px;font-weight:700;margin-bottom:1.25rem}
-  .kw-form-row{display:flex;gap:10px;flex-wrap:wrap}
-  .kw-form-row input,.kw-form-row select{background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-size:14px;font-family:var(--font);color:var(--text);outline:none}
-  .kw-form-row input{flex:1;min-width:160px}
-  .kw-form-row input:focus,.kw-form-row select:focus{border-color:var(--accent);background:#fff}
-  .btn-add{background:var(--accent);color:#fff;padding:10px 22px;border-radius:10px;font-size:14px;font-weight:600;border:none;cursor:pointer;font-family:var(--font);white-space:nowrap}
-  .btn-add:hover{background:#6d28d9}
-  .kw-filter-bar{display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap}
-  .kw-filter-btn{padding:6px 16px;border-radius:999px;font-size:13px;font-weight:500;border:1.5px solid var(--border);background:#fff;color:var(--muted);cursor:pointer;transition:all 0.18s}
-  .kw-filter-btn.active,.kw-filter-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(124,58,237,0.06)}
-  .kw-section{margin-bottom:1.75rem}
-  .kw-section-title{font-size:13px;font-weight:700;color:var(--muted);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:0.75rem;padding-bottom:6px;border-bottom:1px solid var(--border)}
-  .kw-tags{display:flex;flex-wrap:wrap;gap:10px}
-  .kw-tag{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;font-size:13px;font-weight:600;border:1.5px solid}
-  .kw-tag.priority-high{background:rgba(220,38,38,0.07);border-color:rgba(220,38,38,0.25);color:var(--danger)}
-  .kw-tag.priority-medium{background:rgba(234,179,8,0.07);border-color:rgba(234,179,8,0.35);color:#b45309}
-  .kw-tag.priority-low{background:rgba(22,163,74,0.07);border-color:rgba(22,163,74,0.25);color:var(--success)}
-  .kw-tag.priority-general{background:rgba(124,58,237,0.07);border-color:rgba(124,58,237,0.25);color:var(--accent)}
-  .kw-tag .kw-edit{cursor:pointer;font-size:13px;opacity:0.5;margin-left:2px}
-  .kw-tag .kw-edit:hover{opacity:1}
-  .kw-tag .kw-del{cursor:pointer;font-size:16px;opacity:0.4}
+  /* KEYWORDS 2-LEVEL */
+  .kw-panels{display:grid;grid-template-columns:240px 240px 1fr;gap:1rem;min-height:500px}
+  .kw-panel{background:#fff;border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;overflow:hidden}
+  .kw-panel-hdr{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:rgba(124,58,237,0.03)}
+  .kw-panel-hdr h4{font-size:13px;font-weight:700;color:var(--text)}
+  .kw-panel-body{flex:1;overflow-y:auto;padding:8px}
+  .kw-item{display:flex;align-items:center;justify-content:space-between;padding:9px 10px;border-radius:8px;cursor:pointer;font-size:14px;gap:6px;transition:background 0.15s}
+  .kw-item:hover{background:rgba(124,58,237,0.06)}
+  .kw-item.selected{background:rgba(124,58,237,0.1);color:var(--accent);font-weight:600}
+  .kw-item-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .kw-item-actions{display:flex;gap:4px;flex-shrink:0}
+  .kw-ico-btn{background:transparent;border:none;cursor:pointer;font-size:13px;opacity:0.4;padding:2px;line-height:1}
+  .kw-ico-btn:hover{opacity:1}
+  .kw-add-row{padding:8px;border-top:1px solid var(--border);display:flex;gap:6px}
+  .kw-add-row input{flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;font-family:var(--font);outline:none}
+  .kw-add-row input:focus{border-color:var(--accent)}
+  .kw-add-row button{background:var(--accent);color:#fff;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600}
+  .kw-keyword-panel{flex-direction:column}
+  .kw-kw-toolbar{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .kw-kw-toolbar select{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;font-family:var(--font);outline:none}
+  .kw-kw-toolbar select:focus{border-color:var(--accent)}
+  .kw-kw-toolbar input{flex:1;min-width:120px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;font-family:var(--font);outline:none}
+  .kw-kw-toolbar input:focus{border-color:var(--accent)}
+  .kw-kw-list{flex:1;overflow-y:auto;padding:10px}
+  .kw-tag{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;font-size:13px;font-weight:600;border:1.5px solid;margin:4px}
+  .kw-tag.high{background:rgba(220,38,38,0.07);border-color:rgba(220,38,38,0.25);color:var(--danger)}
+  .kw-tag.medium{background:rgba(234,179,8,0.07);border-color:rgba(234,179,8,0.35);color:#b45309}
+  .kw-tag.low{background:rgba(22,163,74,0.07);border-color:rgba(22,163,74,0.25);color:var(--success)}
+  .kw-tag .kw-del{cursor:pointer;opacity:0.4;font-size:15px}
   .kw-tag .kw-del:hover{opacity:1;color:var(--danger)}
-  .kw-empty{color:var(--muted);font-size:14px;padding:1rem 0}
-  .kw-msg{margin-top:10px;padding:8px 14px;border-radius:8px;font-size:13px;display:none}
+  .kw-tag .kw-edt{cursor:pointer;opacity:0.4;font-size:12px}
+  .kw-tag .kw-edt:hover{opacity:1}
+  .kw-empty{color:var(--muted);font-size:13px;padding:1rem;text-align:center}
+  .kw-breadcrumb{font-size:12px;color:var(--muted);padding:8px 14px;border-bottom:1px solid var(--border);background:rgba(124,58,237,0.02)}
+  .kw-breadcrumb span{color:var(--accent);font-weight:600}
+  .kw-msg{padding:8px 14px;border-radius:8px;font-size:13px;display:none;margin:8px}
   .kw-msg.ok{background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.2);color:var(--success)}
   .kw-msg.err{background:rgba(220,38,38,0.07);border:1px solid rgba(220,38,38,0.2);color:var(--danger)}
-  /* edit inline */
-  .kw-edit-input{border:1.5px solid var(--accent);border-radius:6px;padding:3px 8px;font-size:13px;font-family:var(--font);outline:none;width:110px}
+  .kw-edit-inline{border:1.5px solid var(--accent)!important;background:#fff!important}
 
-  /* CONTACTS MODULE */
-  .contacts-toolbar{display:flex;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap;align-items:center}
+  /* CONTACTS */
+  .contacts-toolbar{display:flex;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap}
   .contacts-toolbar input{flex:1;min-width:200px;background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-size:14px;font-family:var(--font);color:var(--text);outline:none}
   .contacts-toolbar input:focus{border-color:var(--accent)}
-  .contacts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;margin-bottom:2rem}
-  .contact-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;transition:all 0.18s;position:relative}
-  .contact-card:hover{border-color:rgba(124,58,237,0.3);box-shadow:0 2px 16px rgba(124,58,237,0.07)}
+  .contacts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem}
+  .contact-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;position:relative}
   .cc-avatar{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:17px;margin-bottom:0.85rem}
   .cc-name{font-size:15px;font-weight:700;margin-bottom:4px}
   .cc-phone{font-size:13px;color:var(--muted);margin-bottom:8px}
-  .cc-extra{font-size:12px;color:var(--text);margin-top:3px;line-height:1.4}
   .cc-cat{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;background:rgba(124,58,237,0.08);color:var(--accent)}
-  .cc-del{position:absolute;top:12px;right:36px;background:transparent;border:none;color:var(--muted);font-size:16px;cursor:pointer;line-height:1;opacity:0.4}
+  .cc-del{position:absolute;top:12px;right:12px;background:transparent;border:none;color:var(--muted);font-size:18px;cursor:pointer;opacity:0.4}
   .cc-del:hover{opacity:1;color:var(--danger)}
-  .cc-edit{position:absolute;top:12px;right:10px;background:transparent;border:none;color:var(--muted);font-size:16px;cursor:pointer;line-height:1;opacity:0.4}
-  .cc-edit:hover{opacity:1;color:var(--accent)}
-  /* EDIT MODAL */
-  .ct-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:1000;align-items:center;justify-content:center}
-  .ct-modal-bg.open{display:flex}
-  .ct-modal{background:#fff;border-radius:var(--radius);padding:1.5rem;width:min(480px,92vw);max-height:85vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.18)}
   .add-contact-form{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:2rem}
-  .add-contact-form h3{font-size:15px;font-weight:700;margin-bottom:1.25rem;color:var(--text)}
+  .add-contact-form h3{font-size:15px;font-weight:700;margin-bottom:1.25rem}
   .form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:12px}
   .form-field{display:flex;flex-direction:column;gap:5px}
   .form-field label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px}
-  .form-field input,.form-field select{background:var(--bg);border:1.5px solid var(--border);border-radius:9px;padding:10px 12px;font-size:14px;font-family:var(--font);color:var(--text);outline:none;transition:border-color 0.2s}
+  .form-field input,.form-field select{background:var(--bg);border:1.5px solid var(--border);border-radius:9px;padding:10px 12px;font-size:14px;font-family:var(--font);color:var(--text);outline:none}
   .form-field input:focus,.form-field select:focus{border-color:var(--accent);background:#fff}
-  .form-field input::placeholder{color:#b0b8cc}
+  .btn-add{background:var(--accent);color:#fff;padding:10px 22px;border-radius:10px;font-size:14px;font-weight:600;border:none;cursor:pointer}
 
+  /* AUTH */
   .overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(100,90,140,0.25);backdrop-filter:blur(6px);align-items:center;justify-content:center}
   .overlay.open{display:flex}
   .modal{background:#fff;border:1px solid var(--border);border-radius:20px;width:100%;max-width:440px;padding:2.5rem;position:relative;box-shadow:0 20px 60px rgba(124,58,237,0.1)}
@@ -163,38 +156,19 @@
   .modal h2{font-size:1.5rem;font-weight:800;margin-bottom:0.5rem}
   .modal-sub{font-size:14px;color:var(--muted);margin-bottom:2rem}
   .tabs{display:flex;background:var(--bg);border-radius:10px;padding:4px;margin-bottom:1.75rem}
-  .tab{flex:1;padding:9px;border-radius:8px;font-size:14px;font-weight:500;text-align:center;cursor:pointer;color:var(--muted);background:transparent;border:none;transition:all 0.2s;font-family:var(--font)}
+  .tab{flex:1;padding:9px;border-radius:8px;font-size:14px;font-weight:500;text-align:center;cursor:pointer;color:var(--muted);background:transparent;border:none}
   .tab.active{background:#fff;color:var(--accent);box-shadow:0 1px 4px rgba(0,0,0,0.08)}
   label.field-label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;margin-top:1rem;font-weight:500}
   label.field-label:first-of-type{margin-top:0}
-  input.field{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:14px;font-family:var(--font);transition:border-color 0.2s;outline:none}
+  input.field{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:14px;font-family:var(--font);outline:none}
   input.field:focus{border-color:var(--accent);background:#fff}
   input.field::placeholder{color:#b0b8cc}
-  .auth-btn{width:100%;background:var(--accent);color:#fff;padding:13px;border-radius:10px;font-size:15px;font-weight:600;margin-top:1.25rem;border:none;cursor:pointer;font-family:var(--font);transition:all 0.2s}
-  .auth-btn:hover{background:#6d28d9}
+  .auth-btn{width:100%;background:var(--accent);color:#fff;padding:13px;border-radius:10px;font-size:15px;font-weight:600;margin-top:1.25rem;border:none;cursor:pointer}
   .msg{margin-top:1rem;padding:10px 14px;border-radius:8px;font-size:13px;display:none}
   .msg.ok{background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.2);color:var(--success)}
   .msg.err{background:rgba(220,38,38,0.07);border:1px solid rgba(220,38,38,0.2);color:var(--danger)}
-
   footer{background:#fff;border-top:1px solid var(--border);padding:1.5rem 2rem;text-align:center;font-size:13px;color:var(--muted)}
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-  /* TIMELINE */
-  .tl-entry{display:flex;gap:14px;margin-bottom:18px;position:relative}
-  .tl-entry::before{content:'';position:absolute;left:17px;top:36px;bottom:-18px;width:2px;background:var(--border)}
-  .tl-entry:last-child::before{display:none}
-  .tl-dot{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;margin-top:4px;border:2px solid var(--border);background:var(--card)}
-  .tl-body{flex:1;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
-  .tl-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
-  .tl-title{font-size:14px;font-weight:700;color:var(--text)}
-  .tl-date{font-size:12px;color:var(--muted);white-space:nowrap}
-  .tl-cat{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;margin-top:5px;display:inline-block}
-  .tl-desc{font-size:13px;color:var(--muted);margin-top:6px}
-  .tl-meta{font-size:12px;color:var(--accent);margin-top:4px;font-weight:500}
-  .tl-actions{display:flex;gap:6px;margin-top:8px}
-  .tl-btn{font-size:12px;padding:4px 10px;border-radius:7px;border:1px solid var(--border);background:transparent;cursor:pointer;font-family:var(--font);color:var(--muted)}
-  .tl-btn:hover{border-color:var(--accent);color:var(--accent)}
-  .tl-btn.del:hover{border-color:var(--danger);color:var(--danger)}
-  .tl-empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:14px}
 </style>
 </head>
 <body>
@@ -207,7 +181,6 @@
   <div class="nav-links" id="navLinksPublic">
     <a href="#" onclick="showPage('heroPage')">Home</a>
     <a href="#" onclick="showPage('heroPage')">About</a>
-    <a href="#" onclick="showPage('heroPage')">Programs</a>
     <button class="nav-btn" onclick="openModal('login')">Sign in</button>
   </div>
   <div id="navUserArea" style="display:none">
@@ -241,12 +214,12 @@
     <div class="section-title">What we stand for</div>
     <div class="section-sub">From rural schools to community health camps — every effort is rooted in dignity, equity, and lasting change.</div>
     <div class="cards">
-      <div class="card"><div class="card-icon">📚</div><h3>Education support</h3><p>Scholarships, books, and mentorship for students from low-income families.</p></div>
-      <div class="card"><div class="card-icon">🏥</div><h3>Healthcare camps</h3><p>Free medical check-ups and specialist consultations for underserved communities.</p></div>
-      <div class="card"><div class="card-icon">🌾</div><h3>Livelihood programs</h3><p>Skill development and micro-finance to help families build sustainable futures.</p></div>
-      <div class="card"><div class="card-icon">🤝</div><h3>Community outreach</h3><p>Events and volunteer drives that strengthen bonds within local communities.</p></div>
-      <div class="card"><div class="card-icon">🌱</div><h3>Environmental care</h3><p>Tree planting drives, clean water initiatives, and eco-education campaigns.</p></div>
-      <div class="card"><div class="card-icon">👩‍👧</div><h3>Women empowerment</h3><p>Self-help groups and entrepreneurship programs tailored for women in need.</p></div>
+      <div class="card"><div class="card-icon">📚</div><h3>Education support</h3><p>Scholarships and mentorship for students from low-income families.</p></div>
+      <div class="card"><div class="card-icon">🏥</div><h3>Healthcare camps</h3><p>Free medical check-ups for underserved communities.</p></div>
+      <div class="card"><div class="card-icon">🌾</div><h3>Livelihood programs</h3><p>Skill development and micro-finance for sustainable futures.</p></div>
+      <div class="card"><div class="card-icon">🤝</div><h3>Community outreach</h3><p>Events and volunteer drives that strengthen local bonds.</p></div>
+      <div class="card"><div class="card-icon">🌱</div><h3>Environmental care</h3><p>Tree planting drives and clean water initiatives.</p></div>
+      <div class="card"><div class="card-icon">👩‍👧</div><h3>Women empowerment</h3><p>Self-help groups and entrepreneurship programs.</p></div>
     </div>
   </div>
   <div style="text-align:center;padding:4rem 2rem;border-top:1px solid var(--border);background:#fff">
@@ -263,18 +236,9 @@
   <div class="dash-layout">
     <div class="sidebar">
       <div class="sidebar-label">Modules</div>
-      <button class="nav-item active" onclick="switchModule('activity')" id="nav-activity">
-        <span class="icon">📋</span> Activity
-      </button>
-      <button class="nav-item" onclick="switchModule('keywords')" id="nav-keywords">
-        <span class="icon">🏷️</span> Keywords
-      </button>
-      <button class="nav-item" onclick="switchModule('timeline')" id="nav-timeline">
-        <span class="icon">📅</span> Timeline
-      </button>
-      <button class="nav-item" onclick="switchModule('contacts')" id="nav-contacts">
-        <span class="icon">👥</span> Contacts
-      </button>
+      <button class="nav-item active" onclick="switchModule('activity')" id="nav-activity"><span class="icon">📋</span> Activity</button>
+      <button class="nav-item" onclick="switchModule('keywords')" id="nav-keywords"><span class="icon">🏷️</span> Keywords</button>
+      <button class="nav-item" onclick="switchModule('contacts')" id="nav-contacts"><span class="icon">👥</span> Contacts</button>
       <div style="flex:1"></div>
       <div style="padding:12px;background:rgba(124,58,237,0.06);border-radius:10px;font-size:13px;color:var(--muted)">
         <div style="font-weight:700;color:var(--text);margin-bottom:4px" id="sidebarUser"></div>
@@ -284,12 +248,9 @@
 
     <div class="dash-content">
 
-      <!-- ACTIVITY MODULE -->
+      <!-- ACTIVITY -->
       <div class="module active" id="module-activity">
-        <div class="mod-header">
-          <div class="mod-title">Activity Overview</div>
-          <div class="mod-sub">Recent charity activities and performance metrics</div>
-        </div>
+        <div class="mod-header"><div class="mod-title">Activity Overview</div><div class="mod-sub">Recent charity activities and metrics</div></div>
         <div class="metrics-row">
           <div class="metric"><div class="metric-label">📋 Active Programs</div><div class="metric-val">7</div><div class="metric-change">↑ 2 this month</div></div>
           <div class="metric"><div class="metric-label">👥 Beneficiaries</div><div class="metric-val">1,284</div><div class="metric-change">↑ 18% this year</div></div>
@@ -298,234 +259,87 @@
         </div>
         <div class="act-table">
           <div class="act-table-hdr"><h3>Recent Activity</h3><span style="font-size:13px;color:var(--muted)">Live</span></div>
-          <div class="act-row"><div class="act-avatar">HC</div><div class="act-info"><div class="act-name">Health camp organised</div><div class="act-detail">Musiri block · 240 patients attended</div></div><span class="badge badge-green">Completed</span><span class="act-time">2d ago</span></div>
+          <div class="act-row"><div class="act-avatar">HC</div><div class="act-info"><div class="act-name">Health camp organised</div><div class="act-detail">Musiri block · 240 patients</div></div><span class="badge badge-green">Completed</span><span class="act-time">2d ago</span></div>
           <div class="act-row"><div class="act-avatar">SC</div><div class="act-info"><div class="act-name">Scholarship disbursed</div><div class="act-detail">18 students · 2025 batch</div></div><span class="badge badge-purple">Pending</span><span class="act-time">5d ago</span></div>
-          <div class="act-row"><div class="act-avatar">TP</div><div class="act-info"><div class="act-name">Tree planting drive</div><div class="act-detail">500 saplings · Trichy east zone</div></div><span class="badge badge-green">Completed</span><span class="act-time">1w ago</span></div>
-          <div class="act-row"><div class="act-avatar">NV</div><div class="act-info"><div class="act-name">New volunteer joined</div><div class="act-detail">sara.k@gmail.com · Education wing</div></div><span class="badge badge-purple">Active</span><span class="act-time">1w ago</span></div>
+          <div class="act-row"><div class="act-avatar">TP</div><div class="act-info"><div class="act-name">Tree planting drive</div><div class="act-detail">500 saplings · Trichy east</div></div><span class="badge badge-green">Completed</span><span class="act-time">1w ago</span></div>
           <div class="act-row" id="actRegisteredRow" style="display:none"><div class="act-avatar" style="background:rgba(22,163,74,0.1);color:var(--success)">✓</div><div class="act-info"><div class="act-name">New member registered</div><div class="act-detail" id="actRegisteredDetail"></div></div><span class="badge badge-green">New</span><span class="act-time">Just now</span></div>
         </div>
       </div>
 
-      <!-- KEYWORDS MODULE -->
+      <!-- KEYWORDS 2-LEVEL -->
       <div class="module" id="module-keywords">
-        <div class="mod-header">
-          <div class="mod-title">Keywords</div>
-          <div class="mod-sub">Manage categorized keywords for your charity programs</div>
-        </div>
+        <div class="mod-header"><div class="mod-title">Keywords</div><div class="mod-sub">Main Category → Sub Category → Keywords</div></div>
+        <div class="kw-panels">
 
-        <!-- ADD / EDIT FORM -->
-        <div class="kw-form-box">
-          <h3 id="kwFormTitle">➕ Add Keyword</h3>
-          <div class="kw-form-row">
-            <input type="text" id="kwInput" placeholder="Keyword…"/>
-            <select id="kwCategory" onchange="kwCategoryChange(this)">
-              <option value="Education">📚 Education</option>
-              <option value="Healthcare">🏥 Healthcare</option>
-              <option value="Environment">🌱 Environment</option>
-              <option value="Women Welfare">👩 Women Welfare</option>
-              <option value="Livelihood">🌾 Livelihood</option>
-              <option value="Community">🤝 Community</option>
-              <option value="Property Tax">🏠 Property Tax</option>
-              <option value="General">🏷️ General</option>
-              <option value="__new__">➕ New Category…</option>
-            </select>
-            <input type="text" id="kwNewCategory" placeholder="New category name…" style="display:none;flex:1;min-width:140px"/>
-            <select id="kwPriority">
-              <option value="high">🔴 High</option>
-              <option value="medium" selected>🟡 Medium</option>
-              <option value="low">🟢 Low</option>
-            </select>
-            <button class="btn-add" id="kwSaveBtn" onclick="saveKeyword()">+ Add</button>
-            <button id="kwCancelBtn" onclick="cancelKwEdit()" style="display:none;padding:10px 16px;border-radius:10px;border:1.5px solid var(--border);background:#fff;color:var(--muted);font-size:14px">Cancel</button>
-          </div>
-          <div class="kw-msg" id="kwMsg"></div>
-        </div>
-
-        <!-- FILTER BAR -->
-        <div class="kw-filter-bar" id="kwFilterBar">
-          <button class="kw-filter-btn active" onclick="kwSetFilter('All',this)">All</button>
-          <button class="kw-filter-btn" onclick="kwSetFilter('Education',this)">📚 Education</button>
-          <button class="kw-filter-btn" onclick="kwSetFilter('Healthcare',this)">🏥 Healthcare</button>
-          <button class="kw-filter-btn" onclick="kwSetFilter('Environment',this)">🌱 Environment</button>
-          <button class="kw-filter-btn" onclick="kwSetFilter('Women Welfare',this)">👩 Women Welfare</button>
-          <button class="kw-filter-btn" onclick="kwSetFilter('Livelihood',this)">🌾 Livelihood</button>
-          <button class="kw-filter-btn" onclick="kwSetFilter('Community',this)">🤝 Community</button>
-          <button class="kw-filter-btn" onclick="kwSetFilter('Property Tax',this)">🏠 Property Tax</button>
-          <button class="kw-filter-btn" onclick="kwSetFilter('General',this)">🏷️ General</button>
-        </div>
-
-        <!-- KEYWORD LIST grouped by category -->
-        <div style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem">
-          <div id="kwListContainer"><span class="kw-empty">No keywords yet.</span></div>
-        </div>
-      </div>
-
-      <!-- TIMELINE MODULE -->
-      <div class="module" id="module-timeline">
-        <div class="mod-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
-          <div>
-            <div class="mod-title">Timeline</div>
-            <div class="mod-sub">Chronological activities of the organization</div>
-          </div>
-          <button class="btn-primary" onclick="openTLModal()">+ Add Activity</button>
-        </div>
-
-        <!-- Filters -->
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center">
-          <select id="tlCatFilter" onchange="renderTimeline()" style="padding:7px 10px;border-radius:8px;border:1px solid var(--border);font-size:13px;font-family:var(--font);color:var(--text);background:var(--card)">
-            <option value="All">All Categories</option>
-          </select>
-          <button onclick="openTLCatModal()" style="padding:7px 12px;border-radius:8px;border:1px solid var(--accent);background:transparent;font-size:13px;cursor:pointer;color:var(--accent);font-family:var(--font);white-space:nowrap">⚙️ Categories</button>
-          <input type="date" id="tlFromDate" onchange="renderTimeline()" style="padding:7px 10px;border-radius:8px;border:1px solid var(--border);font-size:13px;font-family:var(--font);color:var(--text);background:var(--card)">
-          <input type="date" id="tlToDate" onchange="renderTimeline()" style="padding:7px 10px;border-radius:8px;border:1px solid var(--border);font-size:13px;font-family:var(--font);color:var(--text);background:var(--card)">
-          <button onclick="clearTLFilters()" style="padding:7px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;font-size:13px;cursor:pointer;color:var(--muted);font-family:var(--font)">Clear</button>
-          <select id="tlSortOrder" onchange="renderTimeline()" style="padding:7px 10px;border-radius:8px;border:1px solid var(--border);font-size:13px;font-family:var(--font);color:var(--text);background:var(--card);margin-left:auto">
-            <option value="desc">Newest First</option>
-            <option value="asc">Oldest First</option>
-          </select>
-        </div>
-
-        <!-- Timeline List -->
-        <div id="tlList"></div>
-      </div>
-
-      <!-- TIMELINE MODAL -->
-      <div id="tlModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:1000;align-items:center;justify-content:center">
-        <div style="background:var(--card);border-radius:16px;padding:28px;width:100%;max-width:480px;margin:16px;box-shadow:0 8px 32px rgba(0,0,0,0.15);max-height:90vh;overflow-y:auto">
-          <div style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:20px" id="tlModalTitle">Add Activity</div>
-          <div style="display:flex;flex-direction:column;gap:14px">
-            <div>
-              <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:5px">DATE *</label>
-              <input id="tlDate" type="date" style="width:100%;padding:9px 12px;border-radius:9px;border:1px solid var(--border);font-size:14px;font-family:var(--font);color:var(--text);background:var(--bg);box-sizing:border-box">
+          <!-- MAIN CATEGORY PANEL -->
+          <div class="kw-panel">
+            <div class="kw-panel-hdr"><h4>📁 Main Category</h4></div>
+            <div class="kw-panel-body" id="mainCatList"></div>
+            <div class="kw-add-row">
+              <input type="text" id="newMainCat" placeholder="New main category…"/>
+              <button onclick="addMainCat()">+</button>
             </div>
-            <div>
-              <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:5px">TITLE *</label>
-              <input id="tlTitle" type="text" placeholder="Activity title" style="width:100%;padding:9px 12px;border-radius:9px;border:1px solid var(--border);font-size:14px;font-family:var(--font);color:var(--text);background:var(--bg);box-sizing:border-box">
+          </div>
+
+          <!-- SUB CATEGORY PANEL -->
+          <div class="kw-panel">
+            <div class="kw-panel-hdr"><h4>📂 Sub Category</h4></div>
+            <div class="kw-panel-body" id="subCatList"><div class="kw-empty">← Select main category</div></div>
+            <div class="kw-add-row" id="subCatAddRow" style="display:none">
+              <input type="text" id="newSubCat" placeholder="New sub category…"/>
+              <button onclick="addSubCat()">+</button>
             </div>
-            <div>
-              <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:5px">CATEGORY *</label>
-              <select id="tlCat" style="width:100%;padding:9px 12px;border-radius:9px;border:1px solid var(--border);font-size:14px;font-family:var(--font);color:var(--text);background:var(--bg);box-sizing:border-box">
+          </div>
+
+          <!-- KEYWORDS PANEL -->
+          <div class="kw-panel">
+            <div class="kw-panel-hdr"><h4>🏷️ Keywords</h4></div>
+            <div class="kw-breadcrumb" id="kwBreadcrumb">Select main → sub category</div>
+            <div class="kw-kw-toolbar" id="kwKwToolbar" style="display:none">
+              <input type="text" id="newKwWord" placeholder="Keyword…"/>
+              <select id="newKwPriority">
+                <option value="high">🔴 High</option>
+                <option value="medium" selected>🟡 Medium</option>
+                <option value="low">🟢 Low</option>
               </select>
+              <button class="btn-add" style="padding:7px 14px;font-size:13px" onclick="addKeyword()">+ Add</button>
             </div>
-            <div>
-              <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:5px">DESCRIPTION</label>
-              <textarea id="tlDesc" rows="3" placeholder="Details about this activity..." style="width:100%;padding:9px 12px;border-radius:9px;border:1px solid var(--border);font-size:14px;font-family:var(--font);color:var(--text);background:var(--bg);box-sizing:border-box;resize:vertical"></textarea>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-              <div>
-                <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:5px">AMOUNT (₹)</label>
-                <input id="tlAmount" type="number" placeholder="Optional" style="width:100%;padding:9px 12px;border-radius:9px;border:1px solid var(--border);font-size:14px;font-family:var(--font);color:var(--text);background:var(--bg);box-sizing:border-box">
-              </div>
-              <div>
-                <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:5px">REF ID</label>
-                <input id="tlRef" type="text" placeholder="Optional" style="width:100%;padding:9px 12px;border-radius:9px;border:1px solid var(--border);font-size:14px;font-family:var(--font);color:var(--text);background:var(--bg);box-sizing:border-box">
-              </div>
-            </div>
+            <div class="kw-msg" id="kwMsg"></div>
+            <div class="kw-kw-list" id="kwList"><div class="kw-empty">← Select a sub category</div></div>
           </div>
-          <div id="tlModalMsg" style="font-size:13px;margin-top:12px;display:none"></div>
-          <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">
-            <button onclick="closeTLModal()" style="padding:9px 20px;border-radius:9px;border:1px solid var(--border);background:transparent;font-size:14px;cursor:pointer;font-family:var(--font);color:var(--muted)">Cancel</button>
-            <button onclick="saveTLEntry()" class="btn-primary">Save</button>
-          </div>
+
         </div>
       </div>
 
-      <!-- TIMELINE CATEGORY MODAL -->
-      <div id="tlCatModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:1001;align-items:flex-start;justify-content:center;padding-top:60px">
-        <div style="background:var(--card);border-radius:16px;padding:28px;width:100%;max-width:460px;margin:0 16px;box-shadow:0 8px 32px rgba(0,0,0,0.15);max-height:80vh;display:flex;flex-direction:column">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-            <div style="font-size:17px;font-weight:700;color:var(--text)">Manage Categories</div>
-            <button onclick="closeTLCatModal()" style="background:transparent;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1">×</button>
-          </div>
-          <!-- Add/Edit form -->
-          <div style="display:flex;gap:8px;margin-bottom:18px">
-            <input id="tlCatIcon" type="text" maxlength="2" placeholder="🏷️" style="width:52px;padding:9px;border-radius:9px;border:1px solid var(--border);font-size:18px;text-align:center;font-family:var(--font);color:var(--text);background:var(--bg);flex-shrink:0">
-            <input id="tlCatName" type="text" placeholder="Category name" style="flex:1;padding:9px 12px;border-radius:9px;border:1px solid var(--border);font-size:14px;font-family:var(--font);color:var(--text);background:var(--bg)">
-            <button onclick="saveTLCat()" id="tlCatSaveBtn" style="padding:9px 16px;border-radius:9px;background:var(--accent);color:#fff;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap">Add</button>
-          </div>
-          <div id="tlCatMsg" style="font-size:13px;margin-bottom:10px;display:none;color:var(--danger)"></div>
-          <!-- Category list -->
-          <div id="tlCatList" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px"></div>
-        </div>
-      </div>
-
-      <!-- CONTACTS MODULE -->
+      <!-- CONTACTS -->
       <div class="module" id="module-contacts">
-        <div class="mod-header">
-          <div class="mod-title">Contacts</div>
-          <div class="mod-sub">Manage volunteers, donors, and beneficiaries</div>
-        </div>
+        <div class="mod-header"><div class="mod-title">Contacts</div><div class="mod-sub">Manage volunteers, donors, and beneficiaries</div></div>
         <div class="add-contact-form">
           <h3>➕ Add New Contact</h3>
           <div class="form-row">
-            <div class="form-field">
-              <label>Full Name</label>
-              <input type="text" id="ctName" placeholder="Enter full name"/>
-            </div>
-            <div class="form-field">
-              <label>Phone Number</label>
-              <input type="tel" id="ctPhone" placeholder="+91 XXXXX XXXXX"/>
-            </div>
-            <div class="form-field">
-              <label>Category</label>
-              <select id="ctCategory" onchange="ctCategoryChange(this)">
+            <div class="form-field"><label>Full Name</label><input type="text" id="ctName" placeholder="Enter full name"/></div>
+            <div class="form-field"><label>Phone Number</label><input type="tel" id="ctPhone" placeholder="+91 XXXXX XXXXX"/></div>
+            <div class="form-field"><label>Category</label>
+              <select id="ctCategory">
                 <option value="">Select category…</option>
-                <option value="__new__">➕ New Category…</option>
+                <option value="Volunteer">Volunteer</option>
+                <option value="Donor">Donor</option>
+                <option value="Beneficiary">Beneficiary</option>
+                <option value="Staff">Staff</option>
+                <option value="Trustee">Trustee</option>
+                <option value="Partner">Partner</option>
               </select>
-              <input type="text" id="ctNewCategory" placeholder="New category name…" style="display:none;margin-top:6px;width:100%;background:#fff;border:1.5px solid var(--accent);border-radius:8px;padding:8px 10px;font-size:14px;font-family:var(--font);color:var(--text);outline:none"/>
             </div>
           </div>
-          <!-- Dynamic custom fields -->
-          <div id="ctCustomFieldsArea" style="margin-top:10px"></div>
-          <div style="display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap">
-            <select id="ctFieldSelect" onchange="ctFieldSelectChange()" style="flex:1;min-width:160px;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;font-family:var(--font);color:var(--text);outline:none">
-              <option value="">➕ Add custom field…</option>
-              <option value="__new__">✏️ Define new field…</option>
-            </select>
-            <input type="text" id="ctNewFieldName" placeholder="New field name…" style="display:none;flex:1;min-width:140px;background:#fff;border:1.5px solid var(--accent);border-radius:8px;padding:8px 10px;font-size:13px;font-family:var(--font);color:var(--text);outline:none"/>
-            <button onclick="ctAddField()" style="padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px">Add Field</button>
-          </div>
-          <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
-            <button class="btn-add" onclick="addContact()">Save Contact</button>
-            <button onclick="ctResetForm()" style="padding:10px 20px;background:#f0f0f0;color:var(--text);border:none;border-radius:10px;cursor:pointer;font-size:14px">Reset</button>
-          </div>
+          <button class="btn-add" onclick="addContact()">Save Contact</button>
           <div class="msg" id="ctMsg"></div>
         </div>
         <div class="contacts-toolbar">
           <input type="text" id="ctSearch" placeholder="🔍 Search contacts…" oninput="renderContacts()"/>
         </div>
         <div class="contacts-grid" id="contactsGrid"></div>
-        <div id="ctEmpty" style="display:none;color:var(--muted);font-size:14px;padding:1rem 0">No contacts found.</div>
+        <div id="ctEmpty" style="display:none;color:var(--muted);font-size:14px;padding:1rem">No contacts found.</div>
       </div>
-<!-- CONTACT EDIT MODAL -->
-<div class="ct-modal-bg" id="ctEditModal">
-  <div class="ct-modal">
-    <h3 style="font-size:15px;font-weight:700;margin-bottom:1rem">✏️ Edit Contact</h3>
-    <div class="form-field" style="margin-bottom:10px"><label>Full Name</label><input type="text" id="editCtName" style="width:100%;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;font-size:14px;font-family:var(--font);color:var(--text);outline:none"/></div>
-    <div class="form-field" style="margin-bottom:10px"><label>Phone Number</label><input type="tel" id="editCtPhone" style="width:100%;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;font-size:14px;font-family:var(--font);color:var(--text);outline:none"/></div>
-    <div class="form-field" style="margin-bottom:10px">
-      <label>Category</label>
-      <select id="editCtCategory" onchange="editCatChange(this)" style="width:100%;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;font-size:14px;font-family:var(--font);color:var(--text);outline:none">
-        <option value="">Select…</option>
-      </select>
-      <input type="text" id="editCtNewCat" placeholder="New category…" style="display:none;margin-top:6px;width:100%;background:#fff;border:1.5px solid var(--accent);border-radius:8px;padding:8px 10px;font-size:14px;font-family:var(--font);color:var(--text);outline:none"/>
-    </div>
-    <div id="editCtFieldsArea" style="margin-bottom:10px"></div>
-    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-      <select id="editCtFieldSelect" onchange="editFieldSelectChange()" style="flex:1;min-width:140px;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;font-family:var(--font);color:var(--text);outline:none">
-        <option value="">➕ Add field…</option>
-        <option value="__new__">✏️ New field…</option>
-      </select>
-      <input type="text" id="editCtNewFieldName" placeholder="Field name…" style="display:none;flex:1;min-width:120px;background:#fff;border:1.5px solid var(--accent);border-radius:8px;padding:7px 10px;font-size:13px;font-family:var(--font);color:var(--text);outline:none"/>
-      <button onclick="editAddField()" style="padding:7px 14px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px">Add</button>
-    </div>
-    <div id="editCtMsg" style="font-size:13px;margin-bottom:8px"></div>
-    <div style="display:flex;gap:10px">
-      <button onclick="saveEditContact()" style="flex:1;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:600">Save Changes</button>
-      <button onclick="closeCtModal()" style="padding:10px 18px;background:#f0f0f0;color:var(--text);border:none;border-radius:10px;cursor:pointer">Cancel</button>
-    </div>
-  </div>
-</div>
 
     </div>
   </div>
@@ -563,218 +377,197 @@
 </div>
 
 <script>
-let db, currentUser=null, contacts=[], keywords=[];
-let kwEditId=null, kwActiveFilter='All';
+let db, currentUser=null, contacts=[];
+let selMainId=null, selSubId=null, kwEditId=null;
 
 async function initDB(){
   try{
     const SQL=await initSqlJs({locateFile:f=>`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${f}`});
     db=new SQL.Database();
-    db.run(`CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL,email TEXT UNIQUE NOT NULL,password TEXT NOT NULL,created_at TEXT DEFAULT(datetime('now')))`);
-    db.run(`CREATE TABLE IF NOT EXISTS contacts(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL,phone TEXT NOT NULL,category TEXT NOT NULL)`);
-    db.run(`CREATE TABLE IF NOT EXISTS contact_categories(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT UNIQUE NOT NULL)`);
-    db.run(`CREATE TABLE IF NOT EXISTS contact_field_defs(id INTEGER PRIMARY KEY AUTOINCREMENT,field_name TEXT UNIQUE NOT NULL)`);
-    db.run(`CREATE TABLE IF NOT EXISTS contact_field_values(id INTEGER PRIMARY KEY AUTOINCREMENT,contact_id INTEGER NOT NULL,field_name TEXT NOT NULL,field_value TEXT NOT NULL)`);
-    db.run(`CREATE TABLE IF NOT EXISTS keywords(id INTEGER PRIMARY KEY AUTOINCREMENT,word TEXT NOT NULL,category TEXT NOT NULL,priority TEXT NOT NULL)`);
-    db.run(`CREATE TABLE IF NOT EXISTS timeline(id INTEGER PRIMARY KEY AUTOINCREMENT,entry_date TEXT NOT NULL,title TEXT NOT NULL,category TEXT NOT NULL,description TEXT,amount REAL,ref_id TEXT)`);
-    db.run(`CREATE TABLE IF NOT EXISTS timeline_categories(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL UNIQUE,icon TEXT NOT NULL DEFAULT '📌')`);
-    const tcCount=db.exec('SELECT COUNT(*) FROM timeline_categories');
-    if(!tcCount[0].values[0][0]){
-      const seeds=[['General Activity','📌'],['Bank Transaction','🏦'],['Court Case','⚖️'],['Event','🎉'],['Donation','💝'],['Money Order','📮'],['Meeting','🤝'],['Legal Notice','📜'],['Festival','🪔'],['Tenant','🏠']];
-      seeds.forEach(([n,i])=>db.run('INSERT INTO timeline_categories(name,icon)VALUES(?,?)',[n,i]));
-    }
-    const s=db.exec("SELECT COUNT(*) FROM users");
-    if(s[0].values[0][0]===0){
+    db.run(`CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT,email TEXT UNIQUE,password TEXT)`);
+    db.run(`CREATE TABLE IF NOT EXISTS contacts(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT,phone TEXT,category TEXT)`);
+    db.run(`CREATE TABLE IF NOT EXISTS kw_main(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT UNIQUE NOT NULL)`);
+    db.run(`CREATE TABLE IF NOT EXISTS kw_sub(id INTEGER PRIMARY KEY AUTOINCREMENT,main_id INTEGER,name TEXT NOT NULL,UNIQUE(main_id,name))`);
+    db.run(`CREATE TABLE IF NOT EXISTS keywords(id INTEGER PRIMARY KEY AUTOINCREMENT,sub_id INTEGER,word TEXT NOT NULL,priority TEXT NOT NULL)`);
+
+    // seed users
+    if(!db.exec("SELECT COUNT(*) FROM users")[0].values[0][0]){
       db.run("INSERT INTO users(name,email,password)VALUES(?,?,?)",["Demo User","demo@trcc.org","5c7bd16f"]);
     }
-    const c=db.exec("SELECT COUNT(*) FROM contacts");
-    if(c[0].values[0][0]===0){
-      db.run("INSERT INTO contacts(name,phone,category)VALUES(?,?,?)",["Ravi Kumar","9876543210","Volunteer"]);
-      db.run("INSERT INTO contacts(name,phone,category)VALUES(?,?,?)",["Priya Sharma","9123456780","Donor"]);
-      db.run("INSERT INTO contacts(name,phone,category)VALUES(?,?,?)",["Murugan S","9988776655","Beneficiary"]);
-      db.run("INSERT INTO contacts(name,phone,category)VALUES(?,?,?)",["Lakshmi N","9001122334","Trustee"]);
+    // seed contacts
+    if(!db.exec("SELECT COUNT(*) FROM contacts")[0].values[0][0]){
+      [["Ravi Kumar","9876543210","Volunteer"],["Priya Sharma","9123456780","Donor"],
+       ["Murugan S","9988776655","Beneficiary"],["Lakshmi N","9001122334","Trustee"]]
+      .forEach(r=>db.run("INSERT INTO contacts(name,phone,category)VALUES(?,?,?)",r));
     }
-    const cc=db.exec("SELECT COUNT(*) FROM contact_categories");
-    if(cc[0].values[0][0]===0){
-      ["Volunteer","Donor","Beneficiary","Staff","Trustee","Partner"].forEach(cat=>db.run("INSERT OR IGNORE INTO contact_categories(name)VALUES(?)",[cat]));
+    // seed keyword hierarchy
+    if(!db.exec("SELECT COUNT(*) FROM kw_main")[0].values[0][0]){
+      const mains=[["Land"],["Property Tax"],["Education"],["Healthcare"]];
+      mains.forEach(m=>db.run("INSERT INTO kw_main(name)VALUES(?)",m));
+      const mid=r=>db.exec("SELECT id FROM kw_main WHERE name=?",[r])[0].values[0][0];
+      // Land → Urban, Rural
+      db.run("INSERT INTO kw_sub(main_id,name)VALUES(?,?)",[mid("Land"),"Urban"]);
+      db.run("INSERT INTO kw_sub(main_id,name)VALUES(?,?)",[mid("Land"),"Rural"]);
+      // Property Tax → Annual Tax, Penalty
+      db.run("INSERT INTO kw_sub(main_id,name)VALUES(?,?)",[mid("Property Tax"),"Annual Tax"]);
+      db.run("INSERT INTO kw_sub(main_id,name)VALUES(?,?)",[mid("Property Tax"),"Penalty"]);
+      // Education → Primary, Secondary
+      db.run("INSERT INTO kw_sub(main_id,name)VALUES(?,?)",[mid("Education"),"Primary"]);
+      db.run("INSERT INTO kw_sub(main_id,name)VALUES(?,?)",[mid("Education"),"Secondary"]);
+      // Healthcare → General, Specialist
+      db.run("INSERT INTO kw_sub(main_id,name)VALUES(?,?)",[mid("Healthcare"),"General"]);
+      db.run("INSERT INTO kw_sub(main_id,name)VALUES(?,?)",[mid("Healthcare"),"Specialist"]);
+      // seed some keywords
+      const sid=r=>db.exec("SELECT id FROM kw_sub WHERE name=?",[r])[0].values[0][0];
+      [["Urban Land","high"],["Plot","medium"],["Survey No","medium"]].forEach(k=>db.run("INSERT INTO keywords(sub_id,word,priority)VALUES(?,?,?)",[sid("Urban"),k[0],k[1]]));
+      [["Agricultural Land","high"],["Patta","medium"]].forEach(k=>db.run("INSERT INTO keywords(sub_id,word,priority)VALUES(?,?,?)",[sid("Rural"),k[0],k[1]]));
+      [["Tax Receipt","high"],["Due Date","medium"]].forEach(k=>db.run("INSERT INTO keywords(sub_id,word,priority)VALUES(?,?,?)",[sid("Annual Tax"),k[0],k[1]]));
+      [["Fine","high"],["Arrear","high"]].forEach(k=>db.run("INSERT INTO keywords(sub_id,word,priority)VALUES(?,?,?)",[sid("Penalty"),k[0],k[1]]));
     }
-    const k=db.exec("SELECT COUNT(*) FROM keywords");
-    if(k[0].values[0][0]===0){
-      const seed=[
-        ["Education","high"],["Scholarship","Education","high"],["Healthcare","Healthcare","medium"],
-        ["Medical Camp","Healthcare","medium"],["Tree Planting","Environment","low"],
-        ["Women Empowerment","Women Welfare","high"],["Self Help Group","Women Welfare","medium"],
-        ["Skill Development","Livelihood","medium"],["Volunteer Drive","Community","low"]
-      ];
-      db.run("INSERT INTO keywords(word,category,priority)VALUES(?,?,?)","Education","Education","high");
-      db.run("INSERT INTO keywords(word,category,priority)VALUES(?,?,?)","Scholarship","Education","high");
-      db.run("INSERT INTO keywords(word,category,priority)VALUES(?,?,?)","Healthcare","Healthcare","medium");
-      db.run("INSERT INTO keywords(word,category,priority)VALUES(?,?,?)","Medical Camp","Healthcare","medium");
-      db.run("INSERT INTO keywords(word,category,priority)VALUES(?,?,?)","Tree Planting","Environment","low");
-      db.run("INSERT INTO keywords(word,category,priority)VALUES(?,?,?)","Women Empowerment","Women Welfare","high");
-      db.run("INSERT INTO keywords(word,category,priority)VALUES(?,?,?)","Self Help Group","Women Welfare","medium");
-      db.run("INSERT INTO keywords(word,category,priority)VALUES(?,?,?)","Skill Development","Livelihood","medium");
-      db.run("INSERT INTO keywords(word,category,priority)VALUES(?,?,?)","Volunteer Drive","Community","low");
-    }
-    loadContacts();loadKeywords();loadTimeline();
-    // Seed timeline — INSERT OR IGNORE uses ref_id UNIQUE to skip duplicates on every load
-    db.run('CREATE UNIQUE INDEX IF NOT EXISTS idx_timeline_ref ON timeline(ref_id)');
-    const tlData=[
-        ['2026-06-25','IDCW Payment - HDFC Balanced Advantage Fund','Mutual Fund','Folio 20224417/55 | Rate: Rs.0.25/unit | Units: 6010.760 | Gross: Rs.1502.69 | TDS: Rs.0.00 | Net: Rs.1502.69',1502.69,'Folio-20224417/55'],
-        ['2026-05-25','IDCW Payment - HDFC Balanced Advantage Fund','Mutual Fund','Folio 20224417/55 | Rate: Rs.0.25/unit | Units: 6010.760 | Gross: Rs.1502.69 | TDS: Rs.0.00 | Net: Rs.1502.69',1502.69,'Folio-20224417/55-May'],
-        ['2026-04-27','IDCW Payment - HDFC Balanced Advantage Fund','Mutual Fund','Folio 20224417/55 | Rate: Rs.0.25/unit | Units: 6010.760 | Gross: Rs.1502.69 | TDS: Rs.0.00 | Net: Rs.1502.69',1502.69,'Folio-20224417/55-Apr'],
-        ['2026-06-12','IDCW Declared - Sundaram Aggressive Hybrid Fund','Mutual Fund','IDCW declared on face value of Rs.10/- per unit | Source: Sundaram Mutual',null,'Sundaram-AHF-Jun26'],
-        ['2026-05-14','IDCW Declared - Sundaram Aggressive Hybrid Fund','Mutual Fund','IDCW declared on face value of Rs.10/- per unit | Source: Sundaram Mutual',null,'Sundaram-AHF-May26'],
-        ['2026-04-17','IDCW Declared - Sundaram Aggressive Hybrid Fund','Mutual Fund','IDCW declared on face value of Rs.10/- per unit | Source: Sundaram Mutual',null,'Sundaram-AHF-Apr26'],
-        ['2026-06-09','IDCW Intimation - ICICI Prudential Multi-Asset Fund','Mutual Fund','IDCW declared in ICICI Prudential Multi-Asset Fund - IDCW Option | Source: ICICI Prudential via CAMS',null,'ICICI-MAF-Jun26'],
-        ['2026-05-06','IDCW Intimation - ICICI Prudential Multi-Asset Fund','Mutual Fund','IDCW declared in ICICI Prudential Multi-Asset Fund - IDCW Option | Source: ICICI Prudential via CAMS',null,'ICICI-MAF-May26'],
-        ['2026-04-10','IDCW Intimation - ICICI Prudential Multi-Asset Fund','Mutual Fund','IDCW declared in ICICI Prudential Multi-Asset Fund - IDCW Option | Source: ICICI Prudential via CAMS',null,'ICICI-MAF-Apr26'],
-        ['2026-06-24','TDS Certificate - HDFC MF Q4 FY 2025-26','Mutual Fund','IDCW TDS Certificate | PAN XXXXXX384N | Q4 FY 2025-26 | Source: HDFC MF via CAMS',null,'TDS-HDFC-Q4-FY2526'],
-        ['2026-03-16','TDS Certificate - HDFC MF Q3 FY 2025-26','Mutual Fund','IDCW TDS Certificate | PAN XXXXXX384N | Q3 FY 2025-26 | Source: HDFC MF via CAMS',null,'TDS-HDFC-Q3-FY2526'],
-        ['2025-11-17','TDS Certificate - HDFC MF Q2 FY 2025-26','Mutual Fund','IDCW TDS Certificate | PAN XXXXXX384N | Q2 FY 2025-26 | Source: HDFC MF via CAMS',null,'TDS-HDFC-Q2-FY2526'],
-        ['2025-09-16','TDS Certificate - Sundaram MF Q1 FY 2025-26','Mutual Fund','TDS Certificate | Q1 FY 2025-26 | Source: Sundaram Mutual',null,'TDS-Sundaram-Q1-FY2526'],
-        ['2025-07-07','TDS Certificate - Sundaram MF Q4 FY 2024-25','Mutual Fund','TDS Certificate | Q4 FY 2024-25 | Source: Sundaram Mutual',null,'TDS-Sundaram-Q4-FY2425'],
-        ['2025-06-09','TDS Certificate - HDFC MF Q4 FY 2024-25','Mutual Fund','IDCW TDS Certificate | PAN XXXXXX384N | Q4 FY 2024-25 | Source: HDFC MF via CAMS',null,'TDS-HDFC-Q4-FY2425'],
-        ['2026-03-18','Thotta Trust - GST Registration Requirements','GSTR Filing','KNMA Associates outlined documents required: PAN, Trust Deed, Address Proof, Bank details, Authorised Signatory. | Source: office@knmaassociates.org | PDF: TRCC-GST-001',null,'TRCC-GST-001'],
-        ['2026-03-18','GST REG-01 — Temporary Reference Number Issued','GSTR Filing','PAN email and mobile validated. TRN: 332600075175 issued. Valid 15 days. | Source: donotreply@gst.gov.in | PDF: TRCC-GST-002',null,'TRCC-GST-002'],
-        ['2026-04-10','Welcome to GST Family — GSTIN 33AACTT0384N1Z7 Allotted','GSTR Filing','GST Registration approved. GSTIN: 33AACTT0384N1Z7 | Effective: 01/04/2026 | State: Tamil Nadu | Source: donotreply@gst.gov.in | PDF: TRCC-GST-003',null,'TRCC-GST-003'],
-        ['2026-04-11','GST REG-14 Non-Core Amendment — Submitted','GSTR Filing','Amendment of Non-Core fields submitted for GSTIN 33AACTT0384N1Z7. Under review. | Source: donotreply@gst.gov.in | PDF: TRCC-GST-004',null,'TRCC-GST-004'],
-        ['2026-04-11','GST REG-14 Non-Core Amendment — ARN Intimation','GSTR Filing','ARN generated. Amendment approved for GSTIN 33AACTT0384N1Z7 by RAMANUJAM RENGARAJ. | Source: donotreply@gst.gov.in | PDF: TRCC-GST-005',null,'TRCC-GST-005'],
-        ['2026-05-09','Sample Invoice - Thotta Trust - GST','GSTR Filing','Sample Tax Invoice received from KNMA Associates with GSTIN, HSN/SAC, CGST and SGST format. | Source: office@knmaassociates.org | PDF: TRCC-GST-006',null,'TRCC-GST-006'],
-        ['2026-05-12','GSTR-1 Filed — April 2026','GSTR Filing','GSTR-1 for April 2026 filed. GSTIN: 33AACTT0384N1Z7. GST workings Excel to be sent monthly before 7th. | Source: office@knmaassociates.org | PDF: TRCC-GST-007',null,'TRCC-GST-007'],
-        ['2026-05-16','GST Challan — April 2026','GSTR Filing','Challan for April 2026 shared. Payment required to proceed with GSTR-3B. GSTIN: 33AACTT0384N1Z7. | Source: office@knmaassociates.org | PDF: TRCC-GST-008',null,'TRCC-GST-008'],
-        ['2026-05-20','GSTR-3B Filed — April 2026 (ARN: AB3304265614439)','GSTR Filing','ARN: AB3304265614439 | GSTIN: 33AACTT0384N1Z7 | Period: Apr 2026 | Filed: 20/05/2026 13:09 | By: RAMANUJAM RENGARAJ | Jurisdiction: ROCKFORT | PDF: TRCC-GST-009',null,'TRCC-GST-009'],
-        ['2026-06-10','GSTR-1 May 2026 & GSTR-3B April 2026 — Filed Copies','GSTR Filing','Filed copies of GSTR-1 (May 2026) and GSTR-3B (April 2026). GSTIN: 33AACTT0384N1Z7. Both filed successfully. | Source: office@knmaassociates.org | PDF: TRCC-GST-010',null,'TRCC-GST-010'],
-        ['2026-06-16','GSTR-3B Challan — May 2026','GSTR Filing','Challan for May 2026 shared. Payment required at earliest. GSTIN: 33AACTT0384N1Z7. | Source: office@knmaassociates.org | PDF: TRCC-GST-011',null,'TRCC-GST-011'],
-        ['2026-06-20','GSTR-3B Filed — May 2026 (ARN: AB330526782950V)','GSTR Filing','ARN: AB330526782950V | GSTIN: 33AACTT0384N1Z7 | Period: May 2026 | Filed: 20/06/2026 10:23 | By: RAMANUJAM RENGARAJ | Jurisdiction: ROCKFORT | PDF: TRCC-GST-012',null,'TRCC-GST-012'],
-        ['2026-06-20','GSTR-3B Filed Copy — May 2026','GSTR Filing','Filed copy of GSTR-3B for May 2026. ARN: AB330526782950V | GSTIN: 33AACTT0384N1Z7 | FY: 2026-27 | Source: office@knmaassociates.org | PDF: TRCC-GST-013',null,'TRCC-GST-013'],
-      ];
-    tlData.forEach(([d,t,c,desc,amt,ref])=>db.run('INSERT OR IGNORE INTO timeline(entry_date,title,category,description,amount,ref_id)VALUES(?,?,?,?,?,?)',[d,t,c,desc,amt,ref]));
+    loadContacts(); renderMainCats();
   }catch(e){console.error(e)}
 }
 
-function kwCategoryChange(sel){
-  const ni=document.getElementById('kwNewCategory');
-  ni.style.display=sel.value==='__new__'?'':'none';
-  if(sel.value==='__new__')ni.focus();
+/* ---- KEYWORD 2-LEVEL ---- */
+function renderMainCats(){
+  const r=db.exec("SELECT id,name FROM kw_main ORDER BY name");
+  const rows=r.length?r[0].values:[];
+  const el=document.getElementById('mainCatList');
+  if(!rows.length){el.innerHTML='<div class="kw-empty">No categories yet</div>';return}
+  el.innerHTML=rows.map(([id,name])=>`
+    <div class="kw-item${selMainId===id?' selected':''}" onclick="selectMain(${id})">
+      <span class="kw-item-name">📁 ${name}</span>
+      <span class="kw-item-actions">
+        <button class="kw-ico-btn" onclick="event.stopPropagation();renameMainCat(${id},'${name.replace(/'/g,"\\'")}')">✏️</button>
+        <button class="kw-ico-btn" onclick="event.stopPropagation();deleteMainCat(${id})" style="color:var(--danger)">×</button>
+      </span>
+    </div>`).join('');
 }
 
-function kwGetCategory(){
-  const sel=document.getElementById('kwCategory');
-  if(sel.value==='__new__'){
-    const name=document.getElementById('kwNewCategory').value.trim();
-    return name||null;
-  }
-  return sel.value;
+function selectMain(id){
+  selMainId=id; selSubId=null;
+  renderMainCats(); renderSubCats(); renderKeywords();
 }
 
-function kwAddCategoryToUI(cat){
-  // add to select if not exists
-  const sel=document.getElementById('kwCategory');
-  const exists=[...sel.options].some(o=>o.value===cat);
-  if(!exists){
-    const opt=document.createElement('option');
-    opt.value=cat;opt.textContent='🏷️ '+cat;
-    sel.insertBefore(opt,sel.querySelector('option[value="__new__"]'));
-  }
-  sel.value=cat;
-  document.getElementById('kwNewCategory').style.display='none';
-  document.getElementById('kwNewCategory').value='';
-  // add to filter bar if not exists
-  const bar=document.getElementById('kwFilterBar');
-  const already=[...bar.querySelectorAll('.kw-filter-btn')].some(b=>b.textContent.trim().includes(cat));
-  if(!already){
-    const btn=document.createElement('button');
-    btn.className='kw-filter-btn';
-    btn.textContent='🏷️ '+cat;
-    btn.onclick=function(){kwSetFilter(cat,this)};
-    bar.insertBefore(btn,bar.querySelector('.kw-filter-btn:last-child'));
-  }
-}
-function loadKeywords(){
-  if(!db)return;
-  const r=db.exec("SELECT id,word,category,priority FROM keywords ORDER BY category,priority DESC,word");
-  keywords=r.length?r[0].values.map(row=>({id:row[0],word:row[1],category:row[2],priority:row[3]})):[];
-  renderKeywords();
+function addMainCat(){
+  const name=document.getElementById('newMainCat').value.trim();
+  if(!name)return;
+  try{db.run("INSERT INTO kw_main(name)VALUES(?)",[name]);}catch(e){alert('Already exists');return}
+  document.getElementById('newMainCat').value='';
+  renderMainCats();
 }
 
-function kwSetFilter(cat,btn){
-  kwActiveFilter=cat;
-  document.querySelectorAll('.kw-filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderKeywords();
+function renameMainCat(id,old){
+  const n=prompt('Rename main category:',old);
+  if(!n||n===old)return;
+  db.run("UPDATE kw_main SET name=? WHERE id=?",[n,id]);
+  renderMainCats(); renderSubCats();
+}
+
+function deleteMainCat(id){
+  if(!confirm('Delete main category and all its sub-categories and keywords?'))return;
+  const subs=db.exec("SELECT id FROM kw_sub WHERE main_id=?",[id]);
+  if(subs.length) subs[0].values.forEach(([sid])=>db.run("DELETE FROM keywords WHERE sub_id=?",[sid]));
+  db.run("DELETE FROM kw_sub WHERE main_id=?",[id]);
+  db.run("DELETE FROM kw_main WHERE id=?",[id]);
+  if(selMainId===id){selMainId=null;selSubId=null;}
+  renderMainCats(); renderSubCats(); renderKeywords();
+}
+
+function renderSubCats(){
+  const addRow=document.getElementById('subCatAddRow');
+  const el=document.getElementById('subCatList');
+  if(!selMainId){el.innerHTML='<div class="kw-empty">← Select main category</div>';addRow.style.display='none';return}
+  addRow.style.display='flex';
+  const r=db.exec("SELECT id,name FROM kw_sub WHERE main_id=? ORDER BY name",[selMainId]);
+  const rows=r.length?r[0].values:[];
+  if(!rows.length){el.innerHTML='<div class="kw-empty">No sub-categories yet</div>';return}
+  el.innerHTML=rows.map(([id,name])=>`
+    <div class="kw-item${selSubId===id?' selected':''}" onclick="selectSub(${id})">
+      <span class="kw-item-name">📂 ${name}</span>
+      <span class="kw-item-actions">
+        <button class="kw-ico-btn" onclick="event.stopPropagation();renameSubCat(${id},'${name.replace(/'/g,"\\'")}')">✏️</button>
+        <button class="kw-ico-btn" onclick="event.stopPropagation();deleteSubCat(${id})" style="color:var(--danger)">×</button>
+      </span>
+    </div>`).join('');
+}
+
+function selectSub(id){
+  selSubId=id;
+  renderSubCats(); renderKeywords();
+}
+
+function addSubCat(){
+  if(!selMainId)return;
+  const name=document.getElementById('newSubCat').value.trim();
+  if(!name)return;
+  try{db.run("INSERT INTO kw_sub(main_id,name)VALUES(?,?)",[selMainId,name]);}catch(e){alert('Already exists');return}
+  document.getElementById('newSubCat').value='';
+  renderSubCats();
+}
+
+function renameSubCat(id,old){
+  const n=prompt('Rename sub category:',old);
+  if(!n||n===old)return;
+  db.run("UPDATE kw_sub SET name=? WHERE id=?",[n,id]);
+  renderSubCats(); renderKeywords();
+}
+
+function deleteSubCat(id){
+  if(!confirm('Delete sub-category and all its keywords?'))return;
+  db.run("DELETE FROM keywords WHERE sub_id=?",[id]);
+  db.run("DELETE FROM kw_sub WHERE id=?",[id]);
+  if(selSubId===id)selSubId=null;
+  renderSubCats(); renderKeywords();
 }
 
 function renderKeywords(){
-  const list=kwActiveFilter==='All'?keywords:keywords.filter(k=>k.category===kwActiveFilter);
-  const container=document.getElementById('kwListContainer');
-  if(!list.length){container.innerHTML='<span class="kw-empty">No keywords found.</span>';return}
-  // group by category
-  const groups={};
-  list.forEach(k=>{if(!groups[k.category])groups[k.category]=[];groups[k.category].push(k)});
-  let html='';
-  for(const cat in groups){
-    html+=`<div class="kw-section"><div class="kw-section-title">${cat}</div><div class="kw-tags">`;
-    groups[cat].forEach(k=>{
-      html+=`<span class="kw-tag priority-${k.priority}" data-id="${k.id}">
-        ${k.word}
-        <span class="kw-edit" title="Edit" onclick="startKwEdit(${k.id})">✏️</span>
-        <span class="kw-del" title="Delete" onclick="deleteKeyword(${k.id})">×</span>
-      </span>`;
-    });
-    html+=`</div></div>`;
+  const toolbar=document.getElementById('kwKwToolbar');
+  const bc=document.getElementById('kwBreadcrumb');
+  const el=document.getElementById('kwList');
+  if(!selSubId){
+    toolbar.style.display='none';
+    bc.innerHTML='Select main → sub category';
+    el.innerHTML='<div class="kw-empty">← Select a sub category</div>';
+    return;
   }
-  container.innerHTML=html;
+  toolbar.style.display='flex';
+  // breadcrumb
+  const mainName=selMainId?db.exec("SELECT name FROM kw_main WHERE id=?",[selMainId])[0].values[0][0]:'?';
+  const subName=db.exec("SELECT name FROM kw_sub WHERE id=?",[selSubId])[0].values[0][0];
+  bc.innerHTML=`<span>${mainName}</span> › <span>${subName}</span>`;
+  const r=db.exec("SELECT id,word,priority FROM keywords WHERE sub_id=? ORDER BY priority DESC,word",[selSubId]);
+  const rows=r.length?r[0].values:[];
+  if(!rows.length){el.innerHTML='<div class="kw-empty">No keywords yet. Add one above.</div>';return}
+  el.innerHTML=rows.map(([id,word,pri])=>`
+    <span class="kw-tag ${pri}">
+      ${word}
+      <span class="kw-edt" onclick="editKeyword(${id},'${word.replace(/'/g,"\\'")}','${pri}')">✏️</span>
+      <span class="kw-del" onclick="deleteKeyword(${id})">×</span>
+    </span>`).join('');
 }
 
-function saveKeyword(){
-  const word=document.getElementById('kwInput').value.trim();
-  const cat=kwGetCategory();
-  const pri=document.getElementById('kwPriority').value;
+function addKeyword(){
+  if(!selSubId){showKwMsg('Select a sub-category first.','err');return}
+  const word=document.getElementById('newKwWord').value.trim();
+  const pri=document.getElementById('newKwPriority').value;
   if(!word){showKwMsg('Enter a keyword.','err');return}
-  if(!cat){showKwMsg('Enter a category name.','err');return}
-  kwAddCategoryToUI(cat);
-  if(kwEditId){
-    db.run("UPDATE keywords SET word=?,category=?,priority=? WHERE id=?",[word,cat,pri,kwEditId]);
-    kwEditId=null;
-    document.getElementById('kwFormTitle').textContent='➕ Add Keyword';
-    document.getElementById('kwSaveBtn').textContent='+ Add';
-    document.getElementById('kwCancelBtn').style.display='none';
-    showKwMsg('Keyword updated!','ok');
-  } else {
-    db.run("INSERT INTO keywords(word,category,priority)VALUES(?,?,?)",[word,cat,pri]);
-    showKwMsg('Keyword added!','ok');
-  }
-  document.getElementById('kwInput').value='';
-  loadKeywords();
+  db.run("INSERT INTO keywords(sub_id,word,priority)VALUES(?,?,?)",[selSubId,word,pri]);
+  document.getElementById('newKwWord').value='';
+  showKwMsg('Keyword added!','ok'); renderKeywords();
   setTimeout(()=>showKwMsg('',''),2000);
 }
 
-function startKwEdit(id){
-  const kw=keywords.find(k=>k.id===id);
-  if(!kw)return;
-  kwEditId=id;
-  document.getElementById('kwInput').value=kw.word;
-  document.getElementById('kwCategory').value=kw.category;
-  document.getElementById('kwPriority').value=kw.priority;
-  document.getElementById('kwFormTitle').textContent='✏️ Edit Keyword';
-  document.getElementById('kwSaveBtn').textContent='Save';
-  document.getElementById('kwCancelBtn').style.display='';
-  document.getElementById('kwInput').focus();
-}
-
-function cancelKwEdit(){
-  kwEditId=null;
-  document.getElementById('kwInput').value='';
-  document.getElementById('kwFormTitle').textContent='➕ Add Keyword';
-  document.getElementById('kwSaveBtn').textContent='+ Add';
-  document.getElementById('kwCancelBtn').style.display='none';
+function editKeyword(id,word,pri){
+  const n=prompt('Edit keyword:',word);
+  if(!n||n===word)return;
+  db.run("UPDATE keywords SET word=? WHERE id=?",[n,id]);
+  renderKeywords();
 }
 
 function deleteKeyword(id){
   db.run("DELETE FROM keywords WHERE id=?",[id]);
-  if(kwEditId===id)cancelKwEdit();
-  loadKeywords();
+  renderKeywords();
 }
 
 function showKwMsg(text,type){
@@ -783,78 +576,9 @@ function showKwMsg(text,type){
 }
 
 /* ---- CONTACTS ---- */
-/* --- CONTACTS --- */
-let ctCustomFields=[]; // [{name,value}]
-
-function loadContactCategories(){
-  const r=db.exec("SELECT name FROM contact_categories ORDER BY name");
-  const cats=r.length?r[0].values.map(v=>v[0]):[];
-  const sel=document.getElementById('ctCategory');
-  sel.innerHTML='<option value="">Select category…</option>';
-  cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o)});
-  const n=document.createElement('option');n.value='__new__';n.textContent='➕ New Category…';sel.appendChild(n);
-}
-function loadFieldDefs(){
-  const r=db.exec("SELECT field_name FROM contact_field_defs ORDER BY field_name");
-  const defs=r.length?r[0].values.map(v=>v[0]):[];
-  const sel=document.getElementById('ctFieldSelect');
-  sel.innerHTML='<option value="">➕ Add custom field…</option>';
-  defs.forEach(f=>{const o=document.createElement('option');o.value=f;o.textContent=f;sel.appendChild(o)});
-  const n=document.createElement('option');n.value='__new__';n.textContent='✏️ Define new field…';sel.appendChild(n);
-}
-function ctCategoryChange(sel){
-  const ni=document.getElementById('ctNewCategory');
-  ni.style.display=sel.value==='__new__'?'block':'none';
-  if(sel.value==='__new__')ni.focus();
-}
-function ctFieldSelectChange(){
-  const sel=document.getElementById('ctFieldSelect');
-  const ni=document.getElementById('ctNewFieldName');
-  ni.style.display=sel.value==='__new__'?'block':'none';
-  if(sel.value==='__new__')ni.focus();
-}
-function ctAddField(){
-  const sel=document.getElementById('ctFieldSelect');
-  const ni=document.getElementById('ctNewFieldName');
-  let fname='';
-  if(sel.value==='__new__'){
-    fname=ni.value.trim();
-    if(!fname){alert('Enter a field name.');return}
-    db.run("INSERT OR IGNORE INTO contact_field_defs(field_name)VALUES(?)",[fname]);
-    ni.value='';ni.style.display='none';
-    loadFieldDefs();
-  } else if(sel.value){
-    fname=sel.value;
-  } else {return}
-  if(ctCustomFields.find(f=>f.name===fname)){alert('Field already added.');return}
-  ctCustomFields.push({name:fname,value:''});
-  renderCustomFieldInputs();
-  sel.value='';
-}
-function renderCustomFieldInputs(){
-  const area=document.getElementById('ctCustomFieldsArea');
-  area.innerHTML=ctCustomFields.map((f,i)=>`
-    <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
-      <label style="min-width:120px;font-size:13px;color:var(--muted);font-weight:600">${f.name}</label>
-      <input type="text" value="${f.value}" oninput="ctCustomFields[${i}].value=this.value" placeholder="Value for ${f.name}" style="flex:1;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;font-family:var(--font);color:var(--text);outline:none"/>
-      <button onclick="ctRemoveField(${i})" style="background:#fee2e2;color:#dc2626;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:13px">×</button>
-    </div>`).join('');
-}
-function ctRemoveField(i){ctCustomFields.splice(i,1);renderCustomFieldInputs()}
-function ctResetForm(){
-  document.getElementById('ctName').value='';
-  document.getElementById('ctPhone').value='';
-  document.getElementById('ctCategory').value='';
-  document.getElementById('ctNewCategory').style.display='none';
-  document.getElementById('ctNewCategory').value='';
-  ctCustomFields=[];renderCustomFieldInputs();
-}
 function loadContacts(){
-  if(!db)return;
-  loadContactCategories();
-  loadFieldDefs();
   const r=db.exec("SELECT id,name,phone,category FROM contacts ORDER BY id DESC");
-  contacts=r.length?r[0].values.map(row=>({id:row[0],name:row[1],phone:row[2],category:row[3]})):[];
+  contacts=r.length?r[0].values.map(([id,name,phone,category])=>({id,name,phone,category})):[];
   renderContacts();
 }
 function renderContacts(){
@@ -864,328 +588,26 @@ function renderContacts(){
   const empty=document.getElementById('ctEmpty');
   if(!filtered.length){grid.innerHTML='';empty.style.display='block';return}
   empty.style.display='none';
-  grid.innerHTML=filtered.map(c=>{
-    const fr=db.exec("SELECT field_name,field_value FROM contact_field_values WHERE contact_id=?",[c.id]);
-    const extras=fr.length?fr[0].values.map(v=>`<div class="cc-extra"><span style="color:var(--muted);font-size:11px">${v[0]}:</span> ${v[1]}</div>`).join(''):'';
-    return `<div class="contact-card">
-      <button class="cc-del" title="Delete" onclick="deleteContact(${c.id})">🗑</button>
-      <button class="cc-edit" title="Edit" onclick="openEditContact(${c.id})">✏️</button>
+  grid.innerHTML=filtered.map(c=>`
+    <div class="contact-card">
+      <button class="cc-del" onclick="deleteContact(${c.id})">×</button>
       <div class="cc-avatar">${c.name.charAt(0).toUpperCase()}</div>
       <div class="cc-name">${c.name}</div>
       <div class="cc-phone">📞 ${c.phone}</div>
       <span class="cc-cat">${c.category}</span>
-      ${extras}
-    </div>`;
-  }).join('');
+    </div>`).join('');
 }
 function addContact(){
   const name=document.getElementById('ctName').value.trim();
   const phone=document.getElementById('ctPhone').value.trim();
-  let category=document.getElementById('ctCategory').value;
-  if(category==='__new__'){
-    category=document.getElementById('ctNewCategory').value.trim();
-    if(!category){showCtMsg('Enter new category name.','err');return}
-    db.run("INSERT OR IGNORE INTO contact_categories(name)VALUES(?)",[category]);
-    loadContactCategories();
-    document.getElementById('ctCategory').value=category;
-    document.getElementById('ctNewCategory').style.display='none';
-    document.getElementById('ctNewCategory').value='';
-  }
+  const category=document.getElementById('ctCategory').value;
   if(!name||!phone||!category){showCtMsg('Please fill in all fields.','err');return}
-  if(!/^\+?[\d\s\-]{7,15}$/.test(phone)){showCtMsg('Enter a valid phone number.','err');return}
   db.run("INSERT INTO contacts(name,phone,category)VALUES(?,?,?)",[name,phone,category]);
-  const cid=db.exec("SELECT last_insert_rowid()")[0].values[0][0];
-  ctCustomFields.forEach(f=>{
-    if(f.value.trim()) db.run("INSERT INTO contact_field_values(contact_id,field_name,field_value)VALUES(?,?,?)",[cid,f.name,f.value.trim()]);
-  });
-  ctResetForm();
+  document.getElementById('ctName').value='';document.getElementById('ctPhone').value='';document.getElementById('ctCategory').value='';
   showCtMsg('Contact saved!','ok');loadContacts();setTimeout(()=>showCtMsg('',''),2500);
 }
-function deleteContact(id){
-  db.run("DELETE FROM contact_field_values WHERE contact_id=?",[id]);
-  db.run("DELETE FROM contacts WHERE id=?",[id]);
-  loadContacts();
-}
+function deleteContact(id){db.run("DELETE FROM contacts WHERE id=?",[id]);loadContacts()}
 function showCtMsg(text,type){const el=document.getElementById('ctMsg');el.textContent=text;el.className='msg '+(text?type:'');el.style.display=text?'block':'none'}
-
-/* --- CONTACT EDIT --- */
-let ctEditId=null, ctEditFields=[];
-function openEditContact(id){
-  const c=contacts.find(x=>x.id===id);
-  if(!c)return;
-  ctEditId=id; ctEditFields=[];
-  document.getElementById('editCtName').value=c.name;
-  document.getElementById('editCtPhone').value=c.phone;
-  // load categories into edit select
-  const r=db.exec("SELECT name FROM contact_categories ORDER BY name");
-  const cats=r.length?r[0].values.map(v=>v[0]):[];
-  const sel=document.getElementById('editCtCategory');
-  sel.innerHTML='<option value="">Select…</option>';
-  cats.forEach(cat=>{const o=document.createElement('option');o.value=cat;o.textContent=cat;if(cat===c.category)o.selected=true;sel.appendChild(o)});
-  const n=document.createElement('option');n.value='__new__';n.textContent='➕ New Category…';sel.appendChild(n);
-  // load existing field values
-  const fr=db.exec("SELECT field_name,field_value FROM contact_field_values WHERE contact_id=?",[id]);
-  ctEditFields=fr.length?fr[0].values.map(v=>({name:v[0],value:v[1]})):[];
-  renderEditFields();
-  // load field defs
-  const fd=db.exec("SELECT field_name FROM contact_field_defs ORDER BY field_name");
-  const defs=fd.length?fd[0].values.map(v=>v[0]):[];
-  const fs=document.getElementById('editCtFieldSelect');
-  fs.innerHTML='<option value="">➕ Add field…</option>';
-  defs.forEach(f=>{const o=document.createElement('option');o.value=f;o.textContent=f;fs.appendChild(o)});
-  const nn=document.createElement('option');nn.value='__new__';nn.textContent='✏️ New field…';fs.appendChild(nn);
-  document.getElementById('editCtNewCat').style.display='none';
-  document.getElementById('editCtNewCat').value='';
-  document.getElementById('editCtNewFieldName').style.display='none';
-  document.getElementById('editCtMsg').textContent='';
-  document.getElementById('ctEditModal').classList.add('open');
-}
-function closeCtModal(){document.getElementById('ctEditModal').classList.remove('open')}
-function editCatChange(sel){
-  const ni=document.getElementById('editCtNewCat');
-  ni.style.display=sel.value==='__new__'?'block':'none';
-  if(sel.value==='__new__')ni.focus();
-}
-function editFieldSelectChange(){
-  const sel=document.getElementById('editCtFieldSelect');
-  const ni=document.getElementById('editCtNewFieldName');
-  ni.style.display=sel.value==='__new__'?'block':'none';
-  if(sel.value==='__new__')ni.focus();
-}
-function editAddField(){
-  const sel=document.getElementById('editCtFieldSelect');
-  const ni=document.getElementById('editCtNewFieldName');
-  let fname='';
-  if(sel.value==='__new__'){
-    fname=ni.value.trim();
-    if(!fname){alert('Enter field name.');return}
-    db.run("INSERT OR IGNORE INTO contact_field_defs(field_name)VALUES(?)",[fname]);
-    ni.value='';ni.style.display='none';
-    loadFieldDefs();
-  } else if(sel.value){fname=sel.value} else {return}
-  if(ctEditFields.find(f=>f.name===fname)){alert('Already added.');return}
-  ctEditFields.push({name:fname,value:''});
-  renderEditFields();
-  sel.value='';
-}
-function renderEditFields(){
-  const area=document.getElementById('editCtFieldsArea');
-  area.innerHTML=ctEditFields.map((f,i)=>`
-    <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
-      <label style="min-width:110px;font-size:13px;color:var(--muted);font-weight:600">${f.name}</label>
-      <input type="text" value="${f.value}" oninput="ctEditFields[${i}].value=this.value" placeholder="Value" style="flex:1;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;font-family:var(--font);color:var(--text);outline:none"/>
-      <button onclick="ctEditFields.splice(${i},1);renderEditFields()" style="background:#fee2e2;color:#dc2626;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:13px">×</button>
-    </div>`).join('');
-}
-function saveEditContact(){
-  const name=document.getElementById('editCtName').value.trim();
-  const phone=document.getElementById('editCtPhone').value.trim();
-  let category=document.getElementById('editCtCategory').value;
-  if(category==='__new__'){
-    category=document.getElementById('editCtNewCat').value.trim();
-    if(!category){document.getElementById('editCtMsg').textContent='Enter category name.';return}
-    db.run("INSERT OR IGNORE INTO contact_categories(name)VALUES(?)",[category]);
-  }
-  if(!name||!phone||!category){document.getElementById('editCtMsg').textContent='Fill all fields.';return}
-  if(!/^\+?[\d\s\-]{7,15}$/.test(phone)){document.getElementById('editCtMsg').textContent='Invalid phone.';return}
-  db.run("UPDATE contacts SET name=?,phone=?,category=? WHERE id=?",[name,phone,category,ctEditId]);
-  db.run("DELETE FROM contact_field_values WHERE contact_id=?",[ctEditId]);
-  ctEditFields.forEach(f=>{if(f.value.trim())db.run("INSERT INTO contact_field_values(contact_id,field_name,field_value)VALUES(?,?,?)",[ctEditId,f.name,f.value.trim()])});
-  closeCtModal();
-  loadContacts();
-}
-
-/* ---- TIMELINE ---- */
-/* ---- TIMELINE CATEGORIES ---- */
-let tlCategories=[], tlCatEditId=null;
-
-function loadTLCategories(){
-  const r=db.exec('SELECT id,name,icon FROM timeline_categories ORDER BY name');
-  tlCategories=r.length?r[0].values.map(v=>({id:v[0],name:v[1],icon:v[2]})):[];
-  populateTLCatDropdowns();
-}
-
-function populateTLCatDropdowns(){
-  const opts=tlCategories.map(c=>`<option value="${c.name}">${c.icon} ${c.name}</option>`).join('');
-  const filterEl=document.getElementById('tlCatFilter');
-  const formEl=document.getElementById('tlCat');
-  if(filterEl){
-    const cur=filterEl.value;
-    filterEl.innerHTML='<option value="All">All Categories</option>'+opts;
-    if(cur)filterEl.value=cur;
-  }
-  if(formEl){
-    const cur=formEl.value;
-    formEl.innerHTML=opts;
-    if(cur)formEl.value=cur;
-  }
-}
-
-function openTLCatModal(){
-  tlCatEditId=null;
-  document.getElementById('tlCatIcon').value='';
-  document.getElementById('tlCatName').value='';
-  document.getElementById('tlCatSaveBtn').textContent='Add';
-  document.getElementById('tlCatMsg').style.display='none';
-  renderTLCatList();
-  document.getElementById('tlCatModal').style.display='flex';
-}
-
-function closeTLCatModal(){
-  document.getElementById('tlCatModal').style.display='none';
-  tlCatEditId=null;
-}
-
-function renderTLCatList(){
-  const el=document.getElementById('tlCatList');
-  if(!tlCategories.length){el.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px">No categories yet.</div>';return;}
-  el.innerHTML=tlCategories.map(c=>`
-    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:var(--bg)">
-      <span style="font-size:20px;width:28px;text-align:center">${c.icon}</span>
-      <span style="flex:1;font-size:14px;color:var(--text);font-weight:500">${c.name}</span>
-      <button onclick="editTLCat(${c.id})" style="padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:transparent;font-size:12px;cursor:pointer;font-family:var(--font);color:var(--muted)">✏️</button>
-      <button onclick="deleteTLCat(${c.id},'${c.name.replace(/'/g,"\'")}')" style="padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:transparent;font-size:12px;cursor:pointer;font-family:var(--font);color:var(--muted)">🗑️</button>
-    </div>`).join('');
-}
-
-function editTLCat(id){
-  const c=tlCategories.find(x=>x.id===id);
-  if(!c)return;
-  tlCatEditId=id;
-  document.getElementById('tlCatIcon').value=c.icon;
-  document.getElementById('tlCatName').value=c.name;
-  document.getElementById('tlCatSaveBtn').textContent='Update';
-}
-
-function saveTLCat(){
-  const icon=document.getElementById('tlCatIcon').value.trim()||'📌';
-  const name=document.getElementById('tlCatName').value.trim();
-  const msg=document.getElementById('tlCatMsg');
-  if(!name){msg.textContent='Category name is required.';msg.style.display='block';return;}
-  msg.style.display='none';
-  if(tlCatEditId){
-    db.run('UPDATE timeline_categories SET name=?,icon=? WHERE id=?',[name,icon,tlCatEditId]);
-    tlCatEditId=null;
-    document.getElementById('tlCatSaveBtn').textContent='Add';
-  } else {
-    try{db.run('INSERT INTO timeline_categories(name,icon)VALUES(?,?)',[name,icon]);}
-    catch(e){msg.textContent='Category already exists.';msg.style.display='block';return;}
-  }
-  document.getElementById('tlCatIcon').value='';
-  document.getElementById('tlCatName').value='';
-  loadTLCategories();
-  renderTLCatList();
-}
-
-function deleteTLCat(id,name){
-  if(!confirm(`Delete category "${name}"?\nExisting activities using it will keep their category label.`))return;
-  db.run('DELETE FROM timeline_categories WHERE id=?',[id]);
-  loadTLCategories();
-  renderTLCatList();
-}
-
-/* ---- TIMELINE ---- */
-let tlEditId=null, timelineEntries=[];
-
-function loadTimeline(){
-  loadTLCategories();
-  const r=db.exec('SELECT id,entry_date,title,category,description,amount,ref_id FROM timeline ORDER BY entry_date DESC,id DESC');
-  timelineEntries=r.length?r[0].values.map(v=>({id:v[0],date:v[1],title:v[2],category:v[3],desc:v[4],amount:v[5],ref:v[6]})):[];
-  renderTimeline();
-}
-
-function renderTimeline(){
-  const cat=document.getElementById('tlCatFilter').value;
-  const from=document.getElementById('tlFromDate').value;
-  const to=document.getElementById('tlToDate').value;
-  const sort=document.getElementById('tlSortOrder').value;
-  let list=[...timelineEntries];
-  if(cat!=='All')list=list.filter(e=>e.category===cat);
-  if(from)list=list.filter(e=>e.date>=from);
-  if(to)list=list.filter(e=>e.date<=to);
-  if(sort==='asc')list.sort((a,b)=>a.date.localeCompare(b.date)||a.id-b.id);
-  const el=document.getElementById('tlList');
-  if(!list.length){el.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--muted);font-size:14px">📅 No activities found. Add your first entry!</div>';return;}
-  const COLORS=['#dbeafe','#fef3c7','#d1fae5','#ede9fe','#fce7f3','#f3f4f6','#e0f2fe','#fee2e2','#fef9c3','#dcfce7','#ffe4e6','#e0e7ff'];
-  const TEXTS=['#1d4ed8','#92400e','#065f46','#5b21b6','#9d174d','#374151','#0369a1','#991b1b','#713f12','#14532d','#9f1239','#3730a3'];
-  const catColorMap={};
-  tlCategories.forEach((c,i)=>{catColorMap[c.name]={bg:COLORS[i%COLORS.length],tc:TEXTS[i%TEXTS.length],icon:c.icon};});
-  el.innerHTML=list.map(e=>{
-    const meta=catColorMap[e.category]||{bg:'#f3f4f6',tc:'#374151',icon:'📌'};
-    const fmtDate=new Date(e.date+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
-    return `<div class="tl-entry">
-      <div class="tl-dot" style="background:${meta.bg};border-color:${meta.bg}">${meta.icon}</div>
-      <div class="tl-body">
-        <div class="tl-top">
-          <div class="tl-title">${e.title}</div>
-          <div class="tl-date">${fmtDate}</div>
-        </div>
-        <span class="tl-cat" style="background:${meta.bg};color:${meta.tc}">${e.category}</span>
-        ${e.desc?`<div class="tl-desc">${e.desc}</div>`:''}
-        ${e.amount||e.ref?`<div class="tl-meta">${e.amount?'₹'+Number(e.amount).toLocaleString('en-IN'):''}${e.amount&&e.ref?' · ':''}${e.ref?'Ref: '+e.ref:''}</div>`:''}
-        <div class="tl-actions">
-          <button class="tl-btn" onclick="editTLEntry(${e.id})">✏️ Edit</button>
-          <button class="tl-btn del" onclick="deleteTLEntry(${e.id})">🗑️ Delete</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function clearTLFilters(){
-  document.getElementById('tlCatFilter').value='All';
-  document.getElementById('tlFromDate').value='';
-  document.getElementById('tlToDate').value='';
-  document.getElementById('tlSortOrder').value='desc';
-  renderTimeline();
-}
-
-function openTLModal(id=null){
-  tlEditId=id;
-  populateTLCatDropdowns();
-  document.getElementById('tlModalTitle').textContent=id?'Edit Activity':'Add Activity';
-  if(id){
-    const e=timelineEntries.find(x=>x.id===id);
-    document.getElementById('tlDate').value=e.date;
-    document.getElementById('tlTitle').value=e.title;
-    document.getElementById('tlCat').value=e.category;
-    document.getElementById('tlDesc').value=e.desc||'';
-    document.getElementById('tlAmount').value=e.amount||'';
-    document.getElementById('tlRef').value=e.ref||'';
-  } else {
-    document.getElementById('tlDate').value=new Date().toISOString().split('T')[0];
-    ['tlTitle','tlDesc','tlAmount','tlRef'].forEach(i=>document.getElementById(i).value='');
-  }
-  document.getElementById('tlModalMsg').style.display='none';
-  document.getElementById('tlModal').style.display='flex';
-}
-
-function closeTLModal(){document.getElementById('tlModal').style.display='none';}
-
-function saveTLEntry(){
-  const date=document.getElementById('tlDate').value.trim();
-  const title=document.getElementById('tlTitle').value.trim();
-  const cat=document.getElementById('tlCat').value;
-  const desc=document.getElementById('tlDesc').value.trim();
-  const amount=document.getElementById('tlAmount').value.trim()||null;
-  const ref=document.getElementById('tlRef').value.trim()||null;
-  const msg=document.getElementById('tlModalMsg');
-  if(!date||!title){msg.textContent='Date and Title are required.';msg.style.display='block';msg.style.color='var(--danger)';return;}
-  if(tlEditId){
-    db.run('UPDATE timeline SET entry_date=?,title=?,category=?,description=?,amount=?,ref_id=? WHERE id=?',[date,title,cat,desc,amount,ref,tlEditId]);
-  } else {
-    db.run('INSERT INTO timeline(entry_date,title,category,description,amount,ref_id)VALUES(?,?,?,?,?,?)',[date,title,cat,desc,amount,ref]);
-  }
-  closeTLModal();loadTimeline();
-}
-
-function editTLEntry(id){openTLModal(id);}
-
-function deleteTLEntry(id){
-  if(!confirm('Delete this activity?'))return;
-  db.run('DELETE FROM timeline WHERE id=?',[id]);
-  loadTimeline();
-}
 
 /* ---- NAV ---- */
 function switchModule(name){
@@ -1203,7 +625,7 @@ function switchTab(t){
   document.getElementById('tabLogin').className='tab'+(t==='login'?' active':'');
   document.getElementById('tabRegister').className='tab'+(t==='register'?' active':'');
   document.getElementById('modalTitle').textContent=t==='login'?'Welcome back':'Create account';
-  document.getElementById('modalSub').textContent=t==='login'?'Sign in to your account':'Join Thotta R. Rajagopal Chettiar Charity';
+  document.getElementById('modalSub').textContent=t==='login'?'Sign in to your account':'Join TRCC';
   clearForms();
 }
 function clearForms(){['loginEmail','loginPass','regName','regEmail','regPass'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});showMsg('loginMsg','','');showMsg('registerMsg','','');}
@@ -1214,33 +636,27 @@ function doLogin(){
   const email=document.getElementById('loginEmail').value.trim();
   const pass=document.getElementById('loginPass').value;
   if(!email||!pass){showMsg('loginMsg','Please fill in all fields.','err');return}
-  if(!db){showMsg('loginMsg','Database not ready.','err');return}
-  try{
-    const r=db.exec("SELECT id,name,email FROM users WHERE email=? AND password=?",[email,hash(pass)]);
-    if(!r.length||!r[0].values.length){showMsg('loginMsg','Invalid email or password.','err');return}
-    const row=r[0].values[0];currentUser={id:row[0],name:row[1],email:row[2]};
-    showMsg('loginMsg','Signing you in…','ok');
-    setTimeout(()=>{closeModal();enterDashboard()},700);
-  }catch(e){showMsg('loginMsg','Error: '+e.message,'err')}
+  const r=db.exec("SELECT id,name,email FROM users WHERE email=? AND password=?",[email,hash(pass)]);
+  if(!r.length||!r[0].values.length){showMsg('loginMsg','Invalid email or password.','err');return}
+  const row=r[0].values[0];currentUser={id:row[0],name:row[1],email:row[2]};
+  showMsg('loginMsg','Signing you in…','ok');
+  setTimeout(()=>{closeModal();enterDashboard()},700);
 }
 function doRegister(){
   const name=document.getElementById('regName').value.trim();
   const email=document.getElementById('regEmail').value.trim();
   const pass=document.getElementById('regPass').value;
   if(!name||!email||!pass){showMsg('registerMsg','Please fill in all fields.','err');return}
-  if(pass.length<6){showMsg('registerMsg','Password must be at least 6 characters.','err');return}
-  if(!db){showMsg('registerMsg','Database not ready.','err');return}
-  try{
-    const exists=db.exec("SELECT id FROM users WHERE email=?",[email]);
-    if(exists.length&&exists[0].values.length){showMsg('registerMsg','Email already registered.','err');return}
-    db.run("INSERT INTO users(name,email,password)VALUES(?,?,?)",[name,email,hash(pass)]);
-    const r=db.exec("SELECT id,name,email FROM users WHERE email=?",[email]);
-    const row=r[0].values[0];currentUser={id:row[0],name:row[1],email:row[2]};
-    showMsg('registerMsg','Account created! Redirecting…','ok');
-    const detail=document.getElementById('actRegisteredDetail');
-    if(detail){detail.textContent=name+' · '+email;document.getElementById('actRegisteredRow').style.display='flex';}
-    setTimeout(()=>{closeModal();enterDashboard()},700);
-  }catch(e){showMsg('registerMsg','Error: '+e.message,'err')}
+  if(pass.length<6){showMsg('registerMsg','Min. 6 characters.','err');return}
+  const exists=db.exec("SELECT id FROM users WHERE email=?",[email]);
+  if(exists.length&&exists[0].values.length){showMsg('registerMsg','Email already registered.','err');return}
+  db.run("INSERT INTO users(name,email,password)VALUES(?,?,?)",[name,email,hash(pass)]);
+  const r=db.exec("SELECT id,name,email FROM users WHERE email=?",[email]);
+  const row=r[0].values[0];currentUser={id:row[0],name:row[1],email:row[2]};
+  showMsg('registerMsg','Account created! Redirecting…','ok');
+  const detail=document.getElementById('actRegisteredDetail');
+  if(detail){detail.textContent=name+' · '+email;document.getElementById('actRegisteredRow').style.display='flex';}
+  setTimeout(()=>{closeModal();enterDashboard()},700);
 }
 function enterDashboard(){
   document.getElementById('navLinksPublic').style.display='none';
@@ -1250,7 +666,7 @@ function enterDashboard(){
   switchModule('activity');showPage('dashPage');
 }
 function logout(){
-  currentUser=null;
+  currentUser=null;selMainId=null;selSubId=null;
   document.getElementById('navLinksPublic').style.display='flex';
   document.getElementById('navUserArea').style.display='none';
   showPage('heroPage');

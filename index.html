@@ -617,10 +617,9 @@ async function initDB(){
       db.run("INSERT INTO keywords(word,category,priority)VALUES(?,?,?)","Volunteer Drive","Community","low");
     }
     loadContacts();loadKeywords();loadTimeline();
-    // Seed timeline from email archive — unique ref IDs prevent re-insertion
-    const tlSeed=db.exec('SELECT COUNT(*) FROM timeline');
-    if(!tlSeed[0].values[0][0]){
-      const tlData=[
+    // Seed timeline — INSERT OR IGNORE uses ref_id UNIQUE to skip duplicates on every load
+    db.run('CREATE UNIQUE INDEX IF NOT EXISTS idx_timeline_ref ON timeline(ref_id)');
+    const tlData=[
         ['2026-06-25','IDCW Payment - HDFC Balanced Advantage Fund','Mutual Fund','Folio 20224417/55 | Rate: Rs.0.25/unit | Units: 6010.760 | Gross: Rs.1502.69 | TDS: Rs.0.00 | Net: Rs.1502.69',1502.69,'Folio-20224417/55'],
         ['2026-05-25','IDCW Payment - HDFC Balanced Advantage Fund','Mutual Fund','Folio 20224417/55 | Rate: Rs.0.25/unit | Units: 6010.760 | Gross: Rs.1502.69 | TDS: Rs.0.00 | Net: Rs.1502.69',1502.69,'Folio-20224417/55-May'],
         ['2026-04-27','IDCW Payment - HDFC Balanced Advantage Fund','Mutual Fund','Folio 20224417/55 | Rate: Rs.0.25/unit | Units: 6010.760 | Gross: Rs.1502.69 | TDS: Rs.0.00 | Net: Rs.1502.69',1502.69,'Folio-20224417/55-Apr'],
@@ -650,8 +649,7 @@ async function initDB(){
         ['2026-06-20','GSTR-3B Filed — May 2026 (ARN: AB330526782950V)','GSTR Filing','ARN: AB330526782950V | GSTIN: 33AACTT0384N1Z7 | Period: May 2026 | Filed: 20/06/2026 10:23 | By: RAMANUJAM RENGARAJ | Jurisdiction: ROCKFORT | PDF: TRCC-GST-012',null,'TRCC-GST-012'],
         ['2026-06-20','GSTR-3B Filed Copy — May 2026','GSTR Filing','Filed copy of GSTR-3B for May 2026. ARN: AB330526782950V | GSTIN: 33AACTT0384N1Z7 | FY: 2026-27 | Source: office@knmaassociates.org | PDF: TRCC-GST-013',null,'TRCC-GST-013'],
       ];
-      tlData.forEach(([d,t,c,desc,amt,ref])=>db.run('INSERT INTO timeline(entry_date,title,category,description,amount,ref_id)VALUES(?,?,?,?,?,?)',[d,t,c,desc,amt,ref]));
-    }
+    tlData.forEach(([d,t,c,desc,amt,ref])=>db.run('INSERT OR IGNORE INTO timeline(entry_date,title,category,description,amount,ref_id)VALUES(?,?,?,?,?,?)',[d,t,c,desc,amt,ref]));
   }catch(e){console.error(e)}
 }
 

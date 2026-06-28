@@ -912,12 +912,22 @@ function scanFolder(input){
 function loadFiles(){
   const res = db.exec(`SELECT id,cabinet,file_number,title,local_path,scanned_date FROM files ORDER BY id DESC`);
   filesData = res.length ? res[0].values.map(r=>({id:r[0],cabinet:r[1],file_number:r[2],title:r[3],local_path:r[4],scanned_date:r[5]})) : [];
-  const catRes = db.exec(`SELECT name FROM kw_main ORDER BY name`);
   const sel = document.getElementById('fileCatFilter');
   const prev = sel.value;
   sel.innerHTML = '<option value="">All Categories</option>';
-  if(catRes.length) catRes[0].values.forEach(r=>{
-    const o=document.createElement('option'); o.value=r[0]; o.textContent=r[0]; sel.appendChild(o);
+  const mains = db.exec(`SELECT id,name FROM kw_main ORDER BY name`);
+  if(mains.length) mains[0].values.forEach(([mid,mname])=>{
+    const mg=document.createElement('optgroup'); mg.label='▶ '+mname; sel.appendChild(mg);
+    const mo=document.createElement('option'); mo.value=mname; mo.textContent=mname; mg.appendChild(mo);
+    const subs=db.exec(`SELECT id,name FROM kw_sub WHERE main_id=? ORDER BY name`,[mid]);
+    if(subs.length) subs[0].values.forEach(([sid,sname])=>{
+      const sg=document.createElement('optgroup'); sg.label='  › '+sname; sel.appendChild(sg);
+      const so=document.createElement('option'); so.value=mname+' › '+sname; so.textContent=sname; sg.appendChild(so);
+      const kws=db.exec(`SELECT word FROM keywords WHERE sub_id=? ORDER BY word`,[sid]);
+      if(kws.length) kws[0].values.forEach(([w])=>{
+        const ko=document.createElement('option'); ko.value=mname+' › '+sname+' › '+w; ko.textContent=w; sg.appendChild(ko);
+      });
+    });
   });
   sel.value = prev;
   renderFiles();

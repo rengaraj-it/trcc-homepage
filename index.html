@@ -927,6 +927,7 @@ function getBasePath(){
 }
 
 
+function loadFiles(){
   const res = db.exec(`SELECT id,cabinet,file_number,title,local_path,scanned_date FROM files ORDER BY id DESC`);
   filesData = res.length ? res[0].values.map(r=>({id:r[0],cabinet:r[1],file_number:r[2],title:r[3],local_path:r[4],scanned_date:r[5]})) : [];
   // Load saved base path

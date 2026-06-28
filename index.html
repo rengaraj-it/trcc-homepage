@@ -383,19 +383,21 @@
 </div>
 
       <div class="module" id="module-files">
-        <div class="mod-header"><div class="mod-title">🗂️ Files</div><div class="mod-sub">Scan local folder — metadata stored here</div></div>
-        <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
-          <label style="padding:8px 16px;background:var(--accent);color:#fff;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+          <div><div class="mod-title">🗂️ Files</div><div class="mod-sub">Scan local folder — metadata stored here</div></div>
+          <label style="padding:8px 16px;background:var(--accent);color:#fff;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">
             📁 Select Folder
             <input type="file" id="folderInput" webkitdirectory multiple style="display:none" onchange="scanFolder(this)"/>
           </label>
+        </div>
+        <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
           <input type="text" id="fileSearch" placeholder="🔍 Search…" oninput="renderFiles()" style="flex:1;min-width:140px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px"/>
           <select id="fileCatFilter" onchange="renderFiles()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px">
             <option value="">All Categories</option>
           </select>
         </div>
         <div id="fileScanMsg" style="font-size:13px;color:var(--accent);margin-bottom:8px"></div>
-        <div id="filesList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px"></div>
+        <div id="filesList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px"></div>
       </div>
 
 <!-- FILES MODULE MODAL: Edit File -->

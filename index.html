@@ -383,19 +383,19 @@
 </div>
 
       <div class="module" id="module-files">
-        <div class="mod-header"><div class="mod-title">Files</div><div class="mod-sub">Scan local folder — metadata stored here</div></div>
-        <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
+        <div class="mod-header"><div class="mod-title">🗂️ Files</div><div class="mod-sub">Scan local folder — metadata stored here</div></div>
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
           <label style="padding:8px 16px;background:var(--accent);color:#fff;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600">
             📁 Select Folder
             <input type="file" id="folderInput" webkitdirectory multiple style="display:none" onchange="scanFolder(this)"/>
           </label>
-          <input type="text" id="fileSearch" placeholder="🔍 Search files…" oninput="renderFiles()" style="flex:1;min-width:160px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px"/>
+          <input type="text" id="fileSearch" placeholder="🔍 Search…" oninput="renderFiles()" style="flex:1;min-width:140px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px"/>
           <select id="fileCatFilter" onchange="renderFiles()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px">
             <option value="">All Categories</option>
           </select>
         </div>
-        <div id="fileScanMsg" style="font-size:13px;color:var(--accent);margin-bottom:10px"></div>
-        <div id="filesList"></div>
+        <div id="fileScanMsg" style="font-size:13px;color:var(--accent);margin-bottom:8px"></div>
+        <div id="filesList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px"></div>
       </div>
 
 <!-- FILES MODULE MODAL: Edit File -->
@@ -408,7 +408,10 @@
     <div class="form-field"><label>File Number</label><input type="text" id="feNumber" placeholder="e.g. 001"/></div>
     <div class="form-field"><label>Title / Description</label><input type="text" id="feTitle" placeholder="Short description"/></div>
     <div class="form-field"><label>Local Path (editable)</label><input type="text" id="fePath" placeholder="C:\TRCC\Files\..."/></div>
-    <div class="form-field"><label>Categories (comma separated)</label><input type="text" id="feCategories" placeholder="e.g. Legal, Tax, Property"/></div>
+    <div class="form-field"><label>Categories (from Keywords)</label>
+      <select id="feCategories" multiple style="width:100%;min-height:100px;padding:6px;border:1px solid var(--border);border-radius:8px;font-size:13px"></select>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">Hold Ctrl/Cmd to select multiple</div>
+    </div>
     <div id="feMsg" style="font-size:13px;color:var(--danger);margin-bottom:8px"></div>
     <div style="display:flex;gap:10px">
       <button onclick="saveFileEdit()" style="flex:1;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:600">Save</button>
@@ -906,8 +909,7 @@ function scanFolder(input){
 function loadFiles(){
   const res = db.exec(`SELECT id,cabinet,file_number,title,local_path,scanned_date FROM files ORDER BY id DESC`);
   filesData = res.length ? res[0].values.map(r=>({id:r[0],cabinet:r[1],file_number:r[2],title:r[3],local_path:r[4],scanned_date:r[5]})) : [];
-  // Load categories into filter
-  const catRes = db.exec(`SELECT DISTINCT category FROM file_cats ORDER BY category`);
+  const catRes = db.exec(`SELECT name FROM kw_main ORDER BY name`);
   const sel = document.getElementById('fileCatFilter');
   const prev = sel.value;
   sel.innerHTML = '<option value="">All Categories</option>';
@@ -932,20 +934,20 @@ function renderFiles(){
   if(!rows.length){ el.innerHTML='<div style="color:var(--muted);font-size:13px;padding:20px 0">No files found. Use "Select Folder" to scan.</div>'; return; }
   el.innerHTML = rows.map(f=>{
     const catsRes = db.exec(`SELECT category FROM file_cats WHERE file_id=?`,[f.id]);
-    const cats = catsRes.length ? catsRes[0].values.map(r=>`<span style="background:rgba(124,58,237,0.1);color:var(--accent);padding:2px 8px;border-radius:12px;font-size:11px">${r[0]}</span>`).join(' ') : '<span style="color:var(--muted);font-size:11px">No category</span>';
+    const cats = catsRes.length ? catsRes[0].values.map(r=>`<span style="background:rgba(124,58,237,0.1);color:var(--accent);padding:2px 7px;border-radius:12px;font-size:11px">${r[0]}</span>`).join(' ') : '<span style="color:var(--muted);font-size:11px">No category</span>';
     const href = f.local_path ? `file:///${f.local_path.replace(/\\/g,'/')}` : '#';
-    return `<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px">
-      <div style="font-size:22px;padding-top:2px">📄</div>
-      <div style="flex:1;min-width:0">
-        <div style="font-weight:600;font-size:14px;margin-bottom:2px">${f.title||'(untitled)'}</div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:4px">${f.cabinet?'Cabinet: '+f.cabinet:''} ${f.file_number?'| No: '+f.file_number:''}</div>
-        <div style="margin-bottom:6px">${cats}</div>
-        <a href="${href}" title="${f.local_path||''}" style="font-size:11px;color:var(--accent);word-break:break-all" target="_blank">📂 ${f.local_path||'(no path)'}</a>
+    return `<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 14px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+        <div style="font-size:20px">📄</div>
+        <div style="display:flex;gap:5px">
+          <button onclick="openFileEdit(${f.id})" style="padding:3px 10px;background:var(--accent);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px">Edit</button>
+          <button onclick="deleteFile(${f.id})" style="padding:3px 10px;background:#fee2e2;color:#dc2626;border:none;border-radius:6px;cursor:pointer;font-size:11px">Del</button>
+        </div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        <button onclick="openFileEdit(${f.id})" style="padding:5px 12px;background:var(--accent);color:#fff;border:none;border-radius:7px;cursor:pointer;font-size:12px">Edit</button>
-        <button onclick="deleteFile(${f.id})" style="padding:5px 12px;background:#fee2e2;color:#dc2626;border:none;border-radius:7px;cursor:pointer;font-size:12px">Del</button>
-      </div>
+      <div style="font-weight:600;font-size:13px;margin:6px 0 2px">${f.title||'(untitled)'}</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:4px">${[f.cabinet?'📁 '+f.cabinet:'',f.file_number?'No: '+f.file_number:''].filter(Boolean).join(' · ')}</div>
+      <div style="margin-bottom:6px">${cats}</div>
+      <a href="${href}" style="font-size:11px;color:var(--accent);word-break:break-all" target="_blank">🔗 Open file</a>
     </div>`;
   }).join('');
 }
@@ -958,8 +960,17 @@ function openFileEdit(id){
   document.getElementById('feNumber').value=f.file_number||'';
   document.getElementById('feTitle').value=f.title||'';
   document.getElementById('fePath').value=f.local_path||'';
-  const catsRes = db.exec(`SELECT category FROM file_cats WHERE file_id=?`,[id]);
-  document.getElementById('feCategories').value = catsRes.length ? catsRes[0].values.map(r=>r[0]).join(', ') : '';
+  // Populate multi-select from kw_main
+  const sel = document.getElementById('feCategories');
+  sel.innerHTML='';
+  const kwRes = db.exec(`SELECT name FROM kw_main ORDER BY name`);
+  const selCats = db.exec(`SELECT category FROM file_cats WHERE file_id=?`,[id]);
+  const selSet = selCats.length ? new Set(selCats[0].values.map(r=>r[0])) : new Set();
+  if(kwRes.length) kwRes[0].values.forEach(r=>{
+    const o=document.createElement('option'); o.value=r[0]; o.textContent=r[0];
+    if(selSet.has(r[0])) o.selected=true;
+    sel.appendChild(o);
+  });
   document.getElementById('feMsg').textContent='';
   document.getElementById('fileEditOverlay').style.display='flex';
 }
@@ -974,13 +985,11 @@ function saveFileEdit(){
   const num = document.getElementById('feNumber').value.trim();
   const title = document.getElementById('feTitle').value.trim();
   const path = document.getElementById('fePath').value.trim();
-  const catsRaw = document.getElementById('feCategories').value.trim();
-  if(!title){ document.getElementById('feMsg').textContent='Title required'; return; }
+  const sel = document.getElementById('feCategories');
+  const cats = Array.from(sel.selectedOptions).map(o=>o.value);
   db.run(`UPDATE files SET cabinet=?,file_number=?,title=?,local_path=? WHERE id=?`,[cabinet,num,title,path,id]);
   db.run(`DELETE FROM file_cats WHERE file_id=?`,[id]);
-  if(catsRaw) catsRaw.split(',').map(c=>c.trim()).filter(Boolean).forEach(c=>{
-    db.run(`INSERT INTO file_cats(file_id,category) VALUES(?,?)`,[id,c]);
-  });
+  cats.forEach(c=>db.run(`INSERT INTO file_cats(file_id,category) VALUES(?,?)`,[id,c]));
   closeFileModal();
   loadFiles();
 }

@@ -476,6 +476,18 @@ async function initDB(){
     db.run(`CREATE TABLE IF NOT EXISTS files(id INTEGER PRIMARY KEY AUTOINCREMENT,cabinet TEXT,file_number TEXT,title TEXT,local_path TEXT,scanned_date TEXT)`);
     db.run(`CREATE TABLE IF NOT EXISTS file_cats(id INTEGER PRIMARY KEY AUTOINCREMENT,file_id INTEGER,category TEXT)`);
     db.run(`CREATE TABLE IF NOT EXISTS app_settings(key TEXT PRIMARY KEY,value TEXT)`);
+    db.run(`CREATE TABLE IF NOT EXISTS folders(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT,path TEXT)`);
+    // Restore files data from localStorage
+    try{
+      const saved=localStorage.getItem('trcc_files');
+      if(saved){
+        const d=JSON.parse(saved);
+        (d.files||[]).forEach(r=>db.run(`INSERT OR IGNORE INTO files(id,cabinet,file_number,title,local_path,scanned_date)VALUES(?,?,?,?,?,?)`,r));
+        (d.file_cats||[]).forEach(r=>db.run(`INSERT OR IGNORE INTO file_cats(id,file_id,category)VALUES(?,?,?)`,r));
+        (d.app_settings||[]).forEach(r=>db.run(`INSERT OR IGNORE INTO app_settings(key,value)VALUES(?,?)`,r));
+        (d.folders||[]).forEach(r=>db.run(`INSERT OR IGNORE INTO folders(id,name,path)VALUES(?,?,?)`,r));
+      }
+    }catch(e){console.warn('restore error',e);}
 
     // seed users
     if(!db.exec("SELECT COUNT(*) FROM users")[0].values[0][0]){
@@ -896,37 +908,70 @@ initDB();
 // ── FILES MODULE ──────────────────────────────────────────
 let filesData = [];
 
+function persistFiles(){
+  try{
+    const files=db.exec(`SELECT id,cabinet,file_number,title,local_path,scanned_date FROM files`);
+    const file_cats=db.exec(`SELECT id,file_id,category FROM file_cats`);
+    const app_settings=db.exec(`SELECT key,value FROM app_settings`);
+    const folders=db.exec(`SELECT id,name,path FROM folders`);
+    localStorage.setItem('trcc_files',JSON.stringify({
+      files:files.length?files[0].values:[],
+      file_cats:file_cats.length?file_cats[0].values:[],
+      app_settings:app_settings.length?app_settings[0].values:[],
+      folders:folders.length?folders[0].values:[]
+    }));
+  }catch(e){console.warn('persist error',e);}
+}
+
 function scanFolder(input){
   const fileList = Array.from(input.files);
   if(!fileList.length) return;
-  let added = 0;
   const today = new Date().toISOString().slice(0,10);
-  fileList.forEach(f => {
-    const relPath = f.webkitRelativePath || f.name;
-    const existsRes = db.exec(`SELECT id FROM files WHERE local_path=?`, [relPath]);
-    if(existsRes.length && existsRes[0].values.length) return;
-    db.run(`INSERT INTO files(cabinet,file_number,title,local_path,scanned_date) VALUES(?,?,?,?,?)`,
-      ['', '', f.name, relPath, today]);
-    added++;
-  });
+  // Show pending list with checkboxes — don't insert yet
+  const pending = fileList.map(f=>({name:f.name, relPath:f.webkitRelativePath||f.name}))
+    .filter(f=>{ const ex=db.exec(`SELECT id FROM files WHERE local_path=?`,[f.relPath]); return !(ex.length&&ex[0].values.length); });
   const msg = document.getElementById('fileScanMsg');
-  if(added>0){
-    msg.innerHTML = `✅ ${added} new file(s) found. <button onclick="saveScannedFiles()" style="margin-left:10px;padding:4px 14px;background:var(--accent);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600">💾 Save All</button>`;
-  } else {
-    msg.textContent = 'No new files found (already imported).';
-  }
-  loadFiles();
+  if(!pending.length){ msg.textContent='No new files found (already imported).'; return; }
+  msg.innerHTML = `
+    <div style="background:#f9f5ff;border:1px solid var(--accent);border-radius:10px;padding:12px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-weight:600;font-size:13px">📋 ${pending.length} new file(s) found — select to save:</span>
+        <div style="display:flex;gap:8px">
+          <button onclick="toggleAllScanned(true)" style="padding:3px 10px;font-size:11px;background:#f0f0f0;border:none;border-radius:6px;cursor:pointer">All</button>
+          <button onclick="toggleAllScanned(false)" style="padding:3px 10px;font-size:11px;background:#f0f0f0;border:none;border-radius:6px;cursor:pointer">None</button>
+          <button onclick="saveSelectedFiles('${today}')" style="padding:4px 14px;background:var(--accent);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600">💾 Save Selected</button>
+        </div>
+      </div>
+      <div id="pendingFilesList" style="max-height:180px;overflow-y:auto">
+        ${pending.map((f,i)=>`<label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px;cursor:pointer">
+          <input type="checkbox" class="pendingFile" data-name="${f.name}" data-path="${f.relPath}" checked style="accent-color:var(--accent)"/>
+          <span style="color:var(--muted)">${f.relPath}</span>
+        </label>`).join('')}
+      </div>
+    </div>`;
 }
 
-function saveScannedFiles(){
+function toggleAllScanned(state){
+  document.querySelectorAll('.pendingFile').forEach(cb=>cb.checked=state);
+}
+
+function saveSelectedFiles(today){
+  const checked = document.querySelectorAll('.pendingFile:checked');
+  if(!checked.length){alert('Select at least one file.');return;}
+  checked.forEach(cb=>{
+    db.run(`INSERT INTO files(cabinet,file_number,title,local_path,scanned_date) VALUES(?,?,?,?,?)`,
+      ['','',cb.dataset.name,cb.dataset.path,today]);
+  });
   persistFiles();
-  document.getElementById('fileScanMsg').textContent = '✅ All files saved successfully.';
+  document.getElementById('fileScanMsg').textContent=`✅ ${checked.length} file(s) saved.`;
   setTimeout(()=>document.getElementById('fileScanMsg').textContent='',3000);
+  loadFiles();
 }
 
 function saveBasePath(){
   const bp = document.getElementById('fileBasePath').value.trim();
   db.run(`INSERT OR REPLACE INTO app_settings(key,value) VALUES('file_base_path',?)`,[bp]);
+  persistFiles();
   document.getElementById('fileScanMsg').textContent='✅ Base path saved.';
   setTimeout(()=>document.getElementById('fileScanMsg').textContent='',2000);
 }
@@ -983,6 +1028,9 @@ function renderFiles(){
     const base = getBasePath();
     const fullPath = base ? base + '\\' + (f.local_path||'') : (f.local_path||'');
     const href = fullPath ? `file:///${fullPath.replace(/\\/g,'/')}` : '#';
+    // Short path: last 2 segments of relPath
+    const parts = (f.local_path||'').replace(/\\/g,'/').split('/').filter(Boolean);
+    const shortPath = parts.length>1 ? parts.slice(-2).join('/') : (f.local_path||'');
     return `<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 14px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
         <div style="font-size:20px">📄</div>
@@ -994,7 +1042,7 @@ function renderFiles(){
       <div style="font-weight:600;font-size:13px;margin:6px 0 2px">${f.title||'(untitled)'}</div>
       <div style="font-size:11px;color:var(--muted);margin-bottom:4px">${[f.cabinet?'📁 '+f.cabinet:'',f.file_number?'No: '+f.file_number:''].filter(Boolean).join(' · ')}</div>
       <div style="margin-bottom:6px">${cats}</div>
-      <a href="${href}" style="font-size:11px;color:var(--accent);word-break:break-all" target="_blank">🔗 Open file</a>
+      <a href="${href}" style="font-size:11px;color:var(--accent);word-break:break-all" target="_blank">🔗 ${shortPath||'Open file'}</a>
     </div>`;
   }).join('');
 }
@@ -1047,6 +1095,7 @@ function saveFileEdit(){
   db.run(`UPDATE files SET cabinet=?,file_number=?,title=?,local_path=? WHERE id=?`,[cabinet,num,title,path,id]);
   db.run(`DELETE FROM file_cats WHERE file_id=?`,[id]);
   cats.forEach(c=>db.run(`INSERT INTO file_cats(file_id,category) VALUES(?,?)`,[id,c]));
+  persistFiles();
   closeFileModal();
   loadFiles();
 }
@@ -1055,6 +1104,7 @@ function deleteFile(id){
   if(!confirm('Delete this file record?')) return;
   db.run(`DELETE FROM files WHERE id=?`,[id]);
   db.run(`DELETE FROM file_cats WHERE file_id=?`,[id]);
+  persistFiles();
   loadFiles();
 }
 

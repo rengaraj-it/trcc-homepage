@@ -960,16 +960,26 @@ function openFileEdit(id){
   document.getElementById('feNumber').value=f.file_number||'';
   document.getElementById('feTitle').value=f.title||'';
   document.getElementById('fePath').value=f.local_path||'';
-  // Populate multi-select from kw_main
+  // Populate multi-select from kw_main, kw_sub, keywords
   const sel = document.getElementById('feCategories');
   sel.innerHTML='';
-  const kwRes = db.exec(`SELECT name FROM kw_main ORDER BY name`);
   const selCats = db.exec(`SELECT category FROM file_cats WHERE file_id=?`,[id]);
   const selSet = selCats.length ? new Set(selCats[0].values.map(r=>r[0])) : new Set();
-  if(kwRes.length) kwRes[0].values.forEach(r=>{
-    const o=document.createElement('option'); o.value=r[0]; o.textContent=r[0];
-    if(selSet.has(r[0])) o.selected=true;
-    sel.appendChild(o);
+  const addOpt=(label,val,grp)=>{const o=document.createElement('option');o.value=val;o.textContent=label;if(selSet.has(val))o.selected=true;grp.appendChild(o);};
+  // Main categories
+  const mains = db.exec(`SELECT id,name FROM kw_main ORDER BY name`);
+  if(mains.length) mains[0].values.forEach(([mid,mname])=>{
+    const mg=document.createElement('optgroup'); mg.label='▶ '+mname; sel.appendChild(mg);
+    addOpt(mname, mname, mg);
+    // Sub categories
+    const subs = db.exec(`SELECT id,name FROM kw_sub WHERE main_id=? ORDER BY name`,[mid]);
+    if(subs.length) subs[0].values.forEach(([sid,sname])=>{
+      const sg=document.createElement('optgroup'); sg.label='  › '+sname; sel.appendChild(sg);
+      addOpt(sname, mname+' › '+sname, sg);
+      // Keywords
+      const kws = db.exec(`SELECT word FROM keywords WHERE sub_id=? ORDER BY word`,[sid]);
+      if(kws.length) kws[0].values.forEach(([w])=>addOpt(w, mname+' › '+sname+' › '+w, sg));
+    });
   });
   document.getElementById('feMsg').textContent='';
   document.getElementById('fileEditOverlay').style.display='flex';

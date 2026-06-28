@@ -380,12 +380,16 @@
 
       <!-- FILES -->
       <div class="module" id="module-files">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px">
           <div><div class="mod-title">🗂️ Files</div><div class="mod-sub">Scan local folder — metadata stored here</div></div>
           <label style="padding:8px 16px;background:var(--accent);color:#fff;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">
             📁 Select Folder
             <input type="file" id="folderInput" webkitdirectory multiple style="display:none" onchange="scanFolder(this)"/>
           </label>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center;flex-wrap:wrap">
+          <input type="text" id="fileBasePath" placeholder="Base folder path e.g. C:\TRCC\Files" style="flex:1;min-width:200px;padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px"/>
+          <button onclick="saveBasePath()" style="padding:7px 14px;background:#f3f0ff;color:var(--accent);border:1px solid var(--accent);border-radius:8px;font-size:12px;cursor:pointer;font-weight:600">💾 Save Path</button>
         </div>
         <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
           <input type="text" id="fileSearch" placeholder="🔍 Search…" oninput="renderFiles()" style="flex:1;min-width:140px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px"/>
@@ -471,6 +475,7 @@ async function initDB(){
     db.run(`CREATE TABLE IF NOT EXISTS keywords(id INTEGER PRIMARY KEY AUTOINCREMENT,sub_id INTEGER,word TEXT NOT NULL,priority TEXT NOT NULL)`);
     db.run(`CREATE TABLE IF NOT EXISTS files(id INTEGER PRIMARY KEY AUTOINCREMENT,cabinet TEXT,file_number TEXT,title TEXT,local_path TEXT,scanned_date TEXT)`);
     db.run(`CREATE TABLE IF NOT EXISTS file_cats(id INTEGER PRIMARY KEY AUTOINCREMENT,file_id INTEGER,category TEXT)`);
+    db.run(`CREATE TABLE IF NOT EXISTS app_settings(key TEXT PRIMARY KEY,value TEXT)`);
 
     // seed users
     if(!db.exec("SELECT COUNT(*) FROM users")[0].values[0][0]){
@@ -909,9 +914,24 @@ function scanFolder(input){
   loadFiles();
 }
 
-function loadFiles(){
+function saveBasePath(){
+  const bp = document.getElementById('fileBasePath').value.trim();
+  db.run(`INSERT OR REPLACE INTO app_settings(key,value) VALUES('file_base_path',?)`,[bp]);
+  document.getElementById('fileScanMsg').textContent='✅ Base path saved.';
+  setTimeout(()=>document.getElementById('fileScanMsg').textContent='',2000);
+}
+
+function getBasePath(){
+  const bp = db.exec(`SELECT value FROM app_settings WHERE key='file_base_path'`);
+  return (bp.length && bp[0].values.length) ? bp[0].values[0][0].replace(/[\\\/]+$/,'') : '';
+}
+
+
   const res = db.exec(`SELECT id,cabinet,file_number,title,local_path,scanned_date FROM files ORDER BY id DESC`);
   filesData = res.length ? res[0].values.map(r=>({id:r[0],cabinet:r[1],file_number:r[2],title:r[3],local_path:r[4],scanned_date:r[5]})) : [];
+  // Load saved base path
+  const bp = db.exec(`SELECT value FROM app_settings WHERE key='file_base_path'`);
+  if(bp.length && bp[0].values.length) document.getElementById('fileBasePath').value = bp[0].values[0][0];
   const sel = document.getElementById('fileCatFilter');
   const prev = sel.value;
   sel.innerHTML = '<option value="">All Categories</option>';
@@ -948,7 +968,9 @@ function renderFiles(){
   el.innerHTML = rows.map(f=>{
     const catsRes = db.exec(`SELECT category FROM file_cats WHERE file_id=?`,[f.id]);
     const cats = catsRes.length ? catsRes[0].values.map(r=>`<span style="background:rgba(124,58,237,0.1);color:var(--accent);padding:2px 7px;border-radius:12px;font-size:11px">${r[0]}</span>`).join(' ') : '<span style="color:var(--muted);font-size:11px">No category</span>';
-    const href = f.local_path ? `file:///${f.local_path.replace(/\\/g,'/')}` : '#';
+    const base = getBasePath();
+    const fullPath = base ? base + '\\' + (f.local_path||'') : (f.local_path||'');
+    const href = fullPath ? `file:///${fullPath.replace(/\\/g,'/')}` : '#';
     return `<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 14px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
         <div style="font-size:20px">📄</div>

@@ -902,16 +902,26 @@ function scanFolder(input){
   let added = 0;
   const today = new Date().toISOString().slice(0,10);
   fileList.forEach(f => {
-    // Build path from webkitRelativePath (browser gives relative path)
     const relPath = f.webkitRelativePath || f.name;
     const existsRes = db.exec(`SELECT id FROM files WHERE local_path=?`, [relPath]);
-    if(existsRes.length && existsRes[0].values.length) return; // skip duplicates
+    if(existsRes.length && existsRes[0].values.length) return;
     db.run(`INSERT INTO files(cabinet,file_number,title,local_path,scanned_date) VALUES(?,?,?,?,?)`,
       ['', '', f.name, relPath, today]);
     added++;
   });
-  document.getElementById('fileScanMsg').textContent = `✅ ${added} new file(s) imported. Edit each to add cabinet, number & categories.`;
+  const msg = document.getElementById('fileScanMsg');
+  if(added>0){
+    msg.innerHTML = `✅ ${added} new file(s) found. <button onclick="saveScannedFiles()" style="margin-left:10px;padding:4px 14px;background:var(--accent);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600">💾 Save All</button>`;
+  } else {
+    msg.textContent = 'No new files found (already imported).';
+  }
   loadFiles();
+}
+
+function saveScannedFiles(){
+  persistFiles();
+  document.getElementById('fileScanMsg').textContent = '✅ All files saved successfully.';
+  setTimeout(()=>document.getElementById('fileScanMsg').textContent='',3000);
 }
 
 function saveBasePath(){
@@ -960,8 +970,9 @@ function renderFiles(){
   let rows = filesData;
   if(q) rows = rows.filter(f=>(f.title||'').toLowerCase().includes(q)||(f.cabinet||'').toLowerCase().includes(q)||(f.file_number||'').toLowerCase().includes(q));
   if(cat){
-    const ids = db.exec(`SELECT file_id FROM file_cats WHERE category=?`,[cat]);
-    const idSet = ids.length ? new Set(ids[0].values.map(r=>r[0])) : new Set();
+    // Match category itself AND anything that starts with cat (sub/keyword levels)
+    const allCats = db.exec(`SELECT DISTINCT file_id FROM file_cats WHERE category=? OR category LIKE ?`,[cat, cat+' ›%']);
+    const idSet = allCats.length ? new Set(allCats[0].values.map(r=>r[0])) : new Set();
     rows = rows.filter(f=>idSet.has(f.id));
   }
   const el = document.getElementById('filesList');

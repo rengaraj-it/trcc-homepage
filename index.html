@@ -1073,7 +1073,7 @@ function renderFiles(){
     // Short path: last 2 segments of relPath
     const parts = (f.local_path||'').replace(/\\/g,'/').split('/').filter(Boolean);
     const shortPath = parts.length>1 ? parts.slice(-2).join('/') : (f.local_path||'');
-    return `<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 14px">
+    return `<div ondblclick="openFilePopup('${href}')" style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer" title="Double-click to open file">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
           <input type="checkbox" class="fileChk" data-id="${f.id}" onchange="updateBulkBar()" style="accent-color:var(--accent);width:15px;height:15px"/>
@@ -1143,6 +1143,11 @@ function saveFileEdit(){
   persistFiles();
   closeFileModal();
   loadFiles();
+}
+
+function openFilePopup(href){
+  if(!href||href==='#'){alert('No path set for this file.');return;}
+  window.open(href,'_blank','width=900,height=650,resizable=yes,scrollbars=yes');
 }
 
 function bulkAssignCat(){

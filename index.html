@@ -988,9 +988,12 @@ function toggleAllScanned(state){
 function saveSelectedFiles(today){
   const checked = document.querySelectorAll('.pendingFile:checked');
   if(!checked.length){alert('Select at least one file.');return;}
+  const base = document.getElementById('fileBasePath').value.trim().replace(/[\\\/]+$/,'');
   checked.forEach(cb=>{
+    const relPath = cb.dataset.path;
+    const fullPath = base ? base + '\\' + relPath : relPath;
     db.run(`INSERT INTO files(cabinet,file_number,title,local_path,scanned_date) VALUES(?,?,?,?,?)`,
-      ['','',cb.dataset.name,cb.dataset.path,today]);
+      ['','',cb.dataset.name, fullPath, today]);
   });
   persistFiles();
   document.getElementById('fileScanMsg').textContent=`✅ ${checked.length} file(s) saved.`;
@@ -1168,9 +1171,8 @@ function saveFileEdit(){
 function openFilePopup(id){
   const f = filesData.find(x=>x.id===id);
   if(!f) return;
-  const base=getBasePath();
-  const fullPath=base?base+'\\'+f.local_path:f.local_path;
-  const href=fullPath?`file:///${fullPath.replace(/\\/g,'/')}`:'#';
+  const fullPath = f.local_path||'';
+  const href = fullPath ? `file:///${fullPath.replace(/\\/g,'/')}` : '#';
   document.getElementById('fpTitle').textContent=f.title||f.local_path||'File';
   document.getElementById('fpMeta').textContent=[f.cabinet?'Cabinet: '+f.cabinet:'',f.file_number?'No: '+f.file_number:'',f.scanned_date?'Scanned: '+f.scanned_date:''].filter(Boolean).join('  ·  ');
   document.getElementById('fpPath').textContent=fullPath||'(no path set)';

@@ -1002,11 +1002,21 @@ function saveSelectedFiles(today){
 }
 
 function saveBasePath(){
-  const bp = document.getElementById('fileBasePath').value.trim();
+  const bp = document.getElementById('fileBasePath').value.trim().replace(/[\\\/]+$/,'');
+  if(!bp) return;
   db.run(`INSERT OR REPLACE INTO app_settings(key,value) VALUES('file_base_path',?)`,[bp]);
+  // Migrate existing records that have only relative paths (no drive letter)
+  const all = db.exec(`SELECT id,local_path FROM files`);
+  if(all.length) all[0].values.forEach(([id,lp])=>{
+    if(lp && !lp.match(/^[A-Za-z]:\\/i) && !lp.startsWith('//')){
+      const full = bp + '\\' + lp.replace(/\//g,'\\');
+      db.run(`UPDATE files SET local_path=? WHERE id=?`,[full,id]);
+    }
+  });
   persistFiles();
-  document.getElementById('fileScanMsg').textContent='✅ Base path saved.';
-  setTimeout(()=>document.getElementById('fileScanMsg').textContent='',2000);
+  loadFiles();
+  document.getElementById('fileScanMsg').textContent='✅ Base path saved & all paths updated.';
+  setTimeout(()=>document.getElementById('fileScanMsg').textContent='',3000);
 }
 
 function getBasePath(){

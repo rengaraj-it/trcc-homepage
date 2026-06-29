@@ -401,6 +401,11 @@
           </select>
         </div>
         <div id="fileScanMsg" style="font-size:13px;color:var(--accent);margin-bottom:8px"></div>
+        <div id="bulkBar" style="display:none;align-items:center;gap:10px;margin-bottom:10px;padding:8px 12px;background:#f3f0ff;border-radius:8px">
+          <span id="bulkCount" style="font-size:13px;font-weight:600;color:var(--accent)"></span>
+          <button onclick="bulkDelete()" style="padding:5px 14px;background:#fee2e2;color:#dc2626;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600">🗑 Delete Selected</button>
+          <button onclick="clearBulk()" style="padding:5px 14px;background:#f0f0f0;color:var(--text);border:none;border-radius:6px;cursor:pointer;font-size:12px">Clear</button>
+        </div>
         <div id="filesList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px"></div>
       </div>
 
@@ -1052,7 +1057,10 @@ function renderFiles(){
     const shortPath = parts.length>1 ? parts.slice(-2).join('/') : (f.local_path||'');
     return `<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 14px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-        <div style="font-size:20px">📄</div>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" class="fileChk" data-id="${f.id}" onchange="updateBulkBar()" style="accent-color:var(--accent);width:15px;height:15px"/>
+          <span style="font-size:18px">📄</span>
+        </label>
         <div style="display:flex;gap:5px">
           <button onclick="openFileEdit(${f.id})" style="padding:3px 10px;background:var(--accent);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px">Edit</button>
           <button onclick="deleteFile(${f.id})" style="padding:3px 10px;background:#fee2e2;color:#dc2626;border:none;border-radius:6px;cursor:pointer;font-size:11px">Del</button>
@@ -1116,6 +1124,28 @@ function saveFileEdit(){
   cats.forEach(c=>db.run(`INSERT INTO file_cats(file_id,category) VALUES(?,?)`,[id,c]));
   persistFiles();
   closeFileModal();
+  loadFiles();
+}
+
+function updateBulkBar(){
+  const checked=[...document.querySelectorAll('.fileChk:checked')];
+  const bar=document.getElementById('bulkBar');
+  bar.style.display=checked.length?'flex':'none';
+  document.getElementById('bulkCount').textContent=`${checked.length} selected`;
+}
+function clearBulk(){
+  document.querySelectorAll('.fileChk').forEach(c=>c.checked=false);
+  updateBulkBar();
+}
+function bulkDelete(){
+  const ids=[...document.querySelectorAll('.fileChk:checked')].map(c=>parseInt(c.dataset.id));
+  if(!ids.length) return;
+  if(!confirm(`Delete ${ids.length} file(s)?`)) return;
+  ids.forEach(id=>{
+    db.run(`DELETE FROM files WHERE id=?`,[id]);
+    db.run(`DELETE FROM file_cats WHERE file_id=?`,[id]);
+  });
+  persistFiles();
   loadFiles();
 }
 

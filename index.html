@@ -393,6 +393,9 @@
         </div>
         <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
           <input type="text" id="fileSearch" placeholder="🔍 Search…" oninput="renderFiles()" style="flex:1;min-width:140px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px"/>
+          <select id="folderPathFilter" onchange="renderFiles()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;max-width:200px">
+            <option value="">All Folders</option>
+          </select>
           <select id="fileCatFilter" onchange="renderFiles()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px">
             <option value="">All Categories</option>
           </select>
@@ -988,6 +991,20 @@ function loadFiles(){
   // Load saved base path
   const bp = db.exec(`SELECT value FROM app_settings WHERE key='file_base_path'`);
   if(bp.length && bp[0].values.length) document.getElementById('fileBasePath').value = bp[0].values[0][0];
+  // Build unique folder paths from all files
+  const folderSet = new Set();
+  filesData.forEach(f=>{
+    const parts=(f.local_path||'').replace(/\\/g,'/').split('/').filter(Boolean);
+    // Add every ancestor folder path
+    for(let i=1;i<parts.length;i++) folderSet.add(parts.slice(0,i).join('/'));
+  });
+  const fpSel=document.getElementById('folderPathFilter');
+  const prevFp=fpSel.value;
+  fpSel.innerHTML='<option value="">All Folders</option>';
+  [...folderSet].sort().forEach(p=>{
+    const o=document.createElement('option');o.value=p;o.textContent=p;fpSel.appendChild(o);
+  });
+  fpSel.value=prevFp;
   const sel = document.getElementById('fileCatFilter');
   const prev = sel.value;
   sel.innerHTML = '<option value="">All Categories</option>';
@@ -1012,7 +1029,9 @@ function loadFiles(){
 function renderFiles(){
   const q = (document.getElementById('fileSearch').value||'').toLowerCase();
   const cat = document.getElementById('fileCatFilter').value;
+  const fp = document.getElementById('folderPathFilter').value;
   let rows = filesData;
+  if(fp) rows = rows.filter(f=>(f.local_path||'').replace(/\\/g,'/').startsWith(fp+'/'));
   if(q) rows = rows.filter(f=>(f.title||'').toLowerCase().includes(q)||(f.cabinet||'').toLowerCase().includes(q)||(f.file_number||'').toLowerCase().includes(q));
   if(cat){
     // Match category itself AND anything that starts with cat (sub/keyword levels)

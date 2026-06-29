@@ -439,6 +439,24 @@
   </div>
 </div>
 
+<!-- FILE PREVIEW MODAL -->
+<div class="overlay" id="filePreviewOverlay" style="display:none">
+  <div class="modal" style="max-width:620px;width:95%">
+    <button class="modal-close" onclick="closeFilePreview()">×</button>
+    <h3 id="fpTitle" style="margin-bottom:8px"></h3>
+    <div id="fpMeta" style="font-size:12px;color:var(--muted);margin-bottom:12px"></div>
+    <div style="background:#f9f5ff;border:1px solid var(--accent);border-radius:8px;padding:12px;margin-bottom:14px">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Full Path</div>
+      <div id="fpPath" style="font-size:13px;word-break:break-all;font-family:monospace"></div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button onclick="copyFilePath()" style="padding:8px 18px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600">📋 Copy Path</button>
+      <a id="fpLink" href="#" target="_blank" style="padding:8px 18px;background:#f3f0ff;color:var(--accent);border:1px solid var(--accent);border-radius:8px;font-size:13px;font-weight:600;text-decoration:none">🔗 Open File</a>
+    </div>
+    <div id="fpCopyMsg" style="font-size:12px;color:green;margin-top:8px"></div>
+  </div>
+</div>
+
 <!-- AUTH OVERLAY -->
 <div class="overlay" id="authOverlay">
   <div class="modal">
@@ -1073,7 +1091,7 @@ function renderFiles(){
     // Short path: last 2 segments of relPath
     const parts = (f.local_path||'').replace(/\\/g,'/').split('/').filter(Boolean);
     const shortPath = parts.length>1 ? parts.slice(-2).join('/') : (f.local_path||'');
-    return `<div ondblclick="openFilePopup('${href}')" style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer" title="Double-click to open file">
+    return `<div ondblclick="openFilePopup(${f.id})" style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer" title="Double-click to preview">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
           <input type="checkbox" class="fileChk" data-id="${f.id}" onchange="updateBulkBar()" style="accent-color:var(--accent);width:15px;height:15px"/>
@@ -1145,9 +1163,26 @@ function saveFileEdit(){
   loadFiles();
 }
 
-function openFilePopup(href){
-  if(!href||href==='#'){alert('No path set for this file.');return;}
-  window.open(href,'_blank','width=900,height=650,resizable=yes,scrollbars=yes');
+function openFilePopup(id){
+  const f = filesData.find(x=>x.id===id);
+  if(!f) return;
+  const base=getBasePath();
+  const fullPath=base?base+'\\'+f.local_path:f.local_path;
+  const href=fullPath?`file:///${fullPath.replace(/\\/g,'/')}`:'#';
+  document.getElementById('fpTitle').textContent=f.title||f.local_path||'File';
+  document.getElementById('fpMeta').textContent=[f.cabinet?'Cabinet: '+f.cabinet:'',f.file_number?'No: '+f.file_number:'',f.scanned_date?'Scanned: '+f.scanned_date:''].filter(Boolean).join('  ·  ');
+  document.getElementById('fpPath').textContent=fullPath||'(no path set)';
+  document.getElementById('fpLink').href=href;
+  document.getElementById('fpCopyMsg').textContent='';
+  document.getElementById('filePreviewOverlay').style.display='flex';
+}
+function closeFilePreview(){document.getElementById('filePreviewOverlay').style.display='none';}
+function copyFilePath(){
+  const p=document.getElementById('fpPath').textContent;
+  navigator.clipboard.writeText(p).then(()=>{
+    document.getElementById('fpCopyMsg').textContent='✅ Path copied!';
+    setTimeout(()=>document.getElementById('fpCopyMsg').textContent='',2000);
+  });
 }
 
 function bulkAssignCat(){

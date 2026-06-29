@@ -503,7 +503,7 @@ async function initDB(){
     db.run(`CREATE TABLE IF NOT EXISTS kw_main(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT UNIQUE NOT NULL)`);
     db.run(`CREATE TABLE IF NOT EXISTS kw_sub(id INTEGER PRIMARY KEY AUTOINCREMENT,main_id INTEGER,name TEXT NOT NULL,UNIQUE(main_id,name))`);
     db.run(`CREATE TABLE IF NOT EXISTS keywords(id INTEGER PRIMARY KEY AUTOINCREMENT,sub_id INTEGER,word TEXT NOT NULL,priority TEXT NOT NULL)`);
-    db.run(`CREATE TABLE IF NOT EXISTS files(id INTEGER PRIMARY KEY AUTOINCREMENT,cabinet TEXT,file_number TEXT,title TEXT,local_path TEXT,scanned_date TEXT)`);
+    db.run(`CREATE TABLE IF NOT EXISTS files(id INTEGER PRIMARY KEY AUTOINCREMENT,cabinet TEXT,file_number TEXT,title TEXT,local_path TEXT UNIQUE,scanned_date TEXT)`);
     db.run(`CREATE TABLE IF NOT EXISTS file_cats(id INTEGER PRIMARY KEY AUTOINCREMENT,file_id INTEGER,category TEXT)`);
     db.run(`CREATE TABLE IF NOT EXISTS app_settings(key TEXT PRIMARY KEY,value TEXT)`);
     db.run(`CREATE TABLE IF NOT EXISTS folders(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT,path TEXT)`);
@@ -1015,6 +1015,7 @@ function getBasePath(){
 function loadFiles(){
   const res = db.exec(`SELECT id,cabinet,file_number,title,local_path,scanned_date FROM files ORDER BY id DESC`);
   filesData = res.length ? res[0].values.map(r=>({id:r[0],cabinet:r[1],file_number:r[2],title:r[3],local_path:r[4],scanned_date:r[5]})) : [];
+  if(filesData.length) document.getElementById('fileScanMsg').textContent=`${filesData.length} file(s) in database.`;
   // Load saved base path
   const bp = db.exec(`SELECT value FROM app_settings WHERE key='file_base_path'`);
   if(bp.length && bp[0].values.length) document.getElementById('fileBasePath').value = bp[0].values[0][0];

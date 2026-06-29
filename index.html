@@ -1098,6 +1098,7 @@ function renderFiles(){
           <span style="font-size:18px">📄</span>
         </label>
         <div style="display:flex;gap:5px">
+          <button onclick="openFilePopup(${f.id})" style="padding:3px 10px;background:#e0f2fe;color:#0369a1;border:none;border-radius:6px;cursor:pointer;font-size:11px">👁 View</button>
           <button onclick="openFileEdit(${f.id})" style="padding:3px 10px;background:var(--accent);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px">Edit</button>
           <button onclick="deleteFile(${f.id})" style="padding:3px 10px;background:#fee2e2;color:#dc2626;border:none;border-radius:6px;cursor:pointer;font-size:11px">Del</button>
         </div>

@@ -440,7 +440,7 @@
 </div>
 
 <!-- FILE PREVIEW MODAL -->
-<div class="overlay" id="filePreviewOverlay" style="display:none">
+<div class="overlay" id="filePreviewOverlay">
   <div class="modal" style="max-width:620px;width:95%">
     <button class="modal-close" onclick="closeFilePreview()">×</button>
     <h3 id="fpTitle" style="margin-bottom:8px"></h3>
@@ -1174,9 +1174,9 @@ function openFilePopup(id){
   document.getElementById('fpPath').textContent=fullPath||'(no path set)';
   document.getElementById('fpLink').href=href;
   document.getElementById('fpCopyMsg').textContent='';
-  document.getElementById('filePreviewOverlay').style.display='flex';
+  document.getElementById('filePreviewOverlay').classList.add('open');
 }
-function closeFilePreview(){document.getElementById('filePreviewOverlay').style.display='none';}
+function closeFilePreview(){document.getElementById('filePreviewOverlay').classList.remove('open');}
 function copyFilePath(){
   const p=document.getElementById('fpPath').textContent;
   navigator.clipboard.writeText(p).then(()=>{

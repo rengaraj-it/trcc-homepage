@@ -245,6 +245,7 @@
       <button class="nav-item" onclick="switchModule('keywords')" id="nav-keywords"><span class="icon">🏷️</span> Keywords</button>
       <button class="nav-item" onclick="switchModule('contacts')" id="nav-contacts"><span class="icon">👥</span> Contacts</button>
       <button class="nav-item" onclick="switchModule('files')" id="nav-files"><span class="icon">🗂️</span> Files</button>
+      <button class="nav-item" onclick="switchModule('todos')" id="nav-todos"><span class="icon">✅</span> To-Do</button>
       <div style="flex:1"></div>
       <div style="padding:12px;background:rgba(124,58,237,0.06);border-radius:10px;font-size:13px;color:var(--muted)">
         <div style="font-weight:700;color:var(--text);margin-bottom:4px" id="sidebarUser"></div>
@@ -417,6 +418,25 @@
         <div id="filesList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px"></div>
       </div>
 
+      <!-- TODOS -->
+      <div class="module" id="module-todos">
+        <div class="mod-header"><div class="mod-title">✅ To-Do List</div><div class="mod-sub">Track tasks and follow-ups</div></div>
+        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+          <input type="text" id="todoTask" placeholder="Task description" style="flex:2;min-width:180px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px"/>
+          <input type="date" id="todoDue" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px"/>
+          <select id="todoPriority" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+            <option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option>
+          </select>
+          <button onclick="addTodo()" style="padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px">+ Add</button>
+        </div>
+        <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+          <select id="todoStatusFilter" onchange="renderTodos()" style="padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+            <option value="">All Status</option><option value="pending">Pending</option><option value="done">Done</option>
+          </select>
+        </div>
+        <div id="todosList"></div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -516,6 +536,11 @@ async function initDB(){
     db.run(`CREATE TABLE IF NOT EXISTS file_cats(id INTEGER PRIMARY KEY AUTOINCREMENT,file_id INTEGER,category TEXT)`);
     db.run(`CREATE TABLE IF NOT EXISTS app_settings(key TEXT PRIMARY KEY,value TEXT)`);
     db.run(`CREATE TABLE IF NOT EXISTS folders(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT,path TEXT)`);
+    db.run(`CREATE TABLE IF NOT EXISTS todos(id INTEGER PRIMARY KEY AUTOINCREMENT,task TEXT,due_date TEXT,priority TEXT,status TEXT,created TEXT)`);
+    try{
+      const st=localStorage.getItem('trcc_todos');
+      if(st){ JSON.parse(st).forEach(r=>db.run(`INSERT OR IGNORE INTO todos(id,task,due_date,priority,status,created)VALUES(?,?,?,?,?,?)`,r)); }
+    }catch(e){}
     // Restore files data from localStorage
     try{
       const saved=localStorage.getItem('trcc_files');
@@ -877,6 +902,7 @@ function switchModule(name){
   document.getElementById('module-'+name).classList.add('active');
   document.getElementById('nav-'+name).classList.add('active');
   if(name==='files') loadFiles();
+  if(name==='todos') renderTodos();
 }
 function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active')}
 function openModal(tab){document.getElementById('authOverlay').classList.add('open');switchTab(tab)}
@@ -926,6 +952,51 @@ function enterDashboard(){
   document.getElementById('userGreet').textContent=currentUser.name;
   document.getElementById('sidebarUser').textContent=currentUser.name;
   switchModule('activity');showPage('dashPage');
+}
+function persistTodos(){
+  const rows=db.exec("SELECT id,task,due_date,priority,status,created FROM todos")[0];
+  localStorage.setItem('trcc_todos',JSON.stringify(rows?rows.values:[]));
+}
+function addTodo(){
+  const t=document.getElementById('todoTask').value.trim();
+  if(!t){alert('Enter a task');return}
+  const due=document.getElementById('todoDue').value;
+  const pri=document.getElementById('todoPriority').value;
+  db.run("INSERT INTO todos(task,due_date,priority,status,created)VALUES(?,?,?,?,?)",[t,due,pri,'pending',new Date().toISOString().slice(0,10)]);
+  document.getElementById('todoTask').value='';document.getElementById('todoDue').value='';
+  persistTodos();renderTodos();
+}
+function toggleTodo(id,status){
+  db.run("UPDATE todos SET status=? WHERE id=?",[status==='done'?'pending':'done',id]);
+  persistTodos();renderTodos();
+}
+function deleteTodo(id){
+  if(!confirm('Delete this task?'))return;
+  db.run("DELETE FROM todos WHERE id=?",[id]);
+  persistTodos();renderTodos();
+}
+function renderTodos(){
+  const f=document.getElementById('todoStatusFilter').value;
+  let sql="SELECT id,task,due_date,priority,status FROM todos";
+  if(f)sql+=` WHERE status='${f}'`;
+  sql+=" ORDER BY status ASC, due_date ASC";
+  const res=db.exec(sql)[0];
+  const rows=res?res.values:[];
+  const el=document.getElementById('todosList');
+  if(!rows.length){el.innerHTML='<div style="color:var(--muted);font-size:13px;padding:20px;text-align:center">No tasks yet.</div>';return}
+  const pcolor={high:'#dc2626',medium:'#d97706',low:'#059669'};
+  el.innerHTML=rows.map(r=>{
+    const [id,task,due,pri,status]=r;
+    const done=status==='done';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:#fff">
+      <input type="checkbox" ${done?'checked':''} onchange="toggleTodo(${id},'${status}')" style="width:16px;height:16px;cursor:pointer"/>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600;${done?'text-decoration:line-through;color:var(--muted)':''}">${task}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">${due?('Due: '+due+' · '):''}<span style="color:${pcolor[pri]||'#666'};font-weight:600">${pri.toUpperCase()}</span></div>
+      </div>
+      <button onclick="deleteTodo(${id})" style="padding:4px 10px;background:#fee2e2;color:#dc2626;border:none;border-radius:6px;cursor:pointer;font-size:12px">🗑</button>
+    </div>`;
+  }).join('');
 }
 function logout(){
   currentUser=null;selMainId=null;selSubId=null;

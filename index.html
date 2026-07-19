@@ -388,7 +388,7 @@
           </label>
         </div>
         <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center;flex-wrap:wrap">
-          <input type="text" id="fileBasePath" placeholder="Base folder path e.g. C:\TRCC\Files" style="flex:1;min-width:200px;padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px"/>
+          <input type="text" id="fileBasePath" placeholder="Enter base folder path" style="flex:1;min-width:200px;padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px"/>
           <button onclick="saveBasePath()" style="padding:7px 14px;background:#f3f0ff;color:var(--accent);border:1px solid var(--accent);border-radius:8px;font-size:12px;cursor:pointer;font-weight:600">💾 Save Path</button>
         </div>
         <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
@@ -430,7 +430,7 @@
     <div class="form-field"><label>Cabinet Name</label><input type="text" id="feCabinet" placeholder="e.g. Cabinet-A"/></div>
     <div class="form-field"><label>File Number</label><input type="text" id="feNumber" placeholder="e.g. 001"/></div>
     <div class="form-field"><label>Title / Description</label><input type="text" id="feTitle" placeholder="Short description"/></div>
-    <div class="form-field"><label>Local Path (editable)</label><input type="text" id="fePath" placeholder="C:\TRCC\Files\..."/></div>
+    <div class="form-field"><label>Local Path (editable)</label><input type="text" id="fePath" placeholder="Enter local file path"/></div>
     <div class="form-field"><label>Categories (from Keywords)</label>
       <select id="feCategories" multiple style="width:100%;min-height:100px;padding:6px;border:1px solid var(--border);border-radius:8px;font-size:13px"></select>
       <div style="font-size:11px;color:var(--muted);margin-top:4px">Hold Ctrl/Cmd to select multiple</div>
@@ -450,7 +450,7 @@
     <h3 id="fpTitle" style="margin-bottom:8px"></h3>
     <div id="fpMeta" style="font-size:12px;color:var(--muted);margin-bottom:12px"></div>
     <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
-      <input type="text" id="fpBaseInput" placeholder="Enter base path e.g. D:\TRCC\Files" style="flex:1;padding:7px 10px;border:1px solid var(--accent);border-radius:8px;font-size:12px;font-family:monospace"/>
+      <input type="text" id="fpBaseInput" placeholder="Enter base folder path" style="flex:1;padding:7px 10px;border:1px solid var(--accent);border-radius:8px;font-size:12px;font-family:monospace"/>
       <button onclick="applyBaseInPopup()" style="padding:7px 14px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600">Apply</button>
     </div>
     <div style="background:#f9f5ff;border:1px solid var(--accent);border-radius:8px;padding:12px;margin-bottom:14px">

@@ -401,6 +401,10 @@
           </select>
         </div>
         <div id="fileScanMsg" style="font-size:13px;color:var(--accent);margin-bottom:8px"></div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <button onclick="selectAllFiles(true)" style="padding:4px 12px;background:#f3f0ff;color:var(--accent);border:1px solid var(--accent);border-radius:6px;cursor:pointer;font-size:12px;font-weight:600">☑ Select All</button>
+          <button onclick="selectAllFiles(false)" style="padding:4px 12px;background:#f0f0f0;color:var(--text);border:none;border-radius:6px;cursor:pointer;font-size:12px">☐ Deselect All</button>
+        </div>
         <div id="bulkBar" style="display:none;align-items:center;gap:10px;margin-bottom:10px;padding:8px 12px;background:#f3f0ff;border-radius:8px;flex-wrap:wrap">
           <span id="bulkCount" style="font-size:13px;font-weight:600;color:var(--accent)"></span>
           <select id="bulkCatSel" style="padding:5px 10px;border:1px solid var(--accent);border-radius:6px;font-size:12px;max-width:220px">
@@ -1215,6 +1219,11 @@ function bulkAssignCat(){
   persistFiles();
   clearBulk();
   loadFiles();
+}
+
+function selectAllFiles(state){
+  document.querySelectorAll('.fileChk').forEach(c=>c.checked=state);
+  updateBulkBar();
 }
 
 function updateBulkBar(){

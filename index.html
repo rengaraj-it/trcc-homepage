@@ -446,6 +446,7 @@
             <option value="">All Status</option><option value="pending">Pending</option><option value="done">Done</option>
           </select>
         </div>
+        <div id="todoTodayBanner"></div>
         <div id="todosList"></div>
       </div>
 
@@ -1013,6 +1014,14 @@ function renderTodos(){
   const res=db.exec(sql)[0];
   const rows=res?res.values:[];
   const el=document.getElementById('todosList');
+  const today=new Date().toISOString().slice(0,10);
+  const todayRows=rows.filter(r=>r[2]===today&&r[4]!=='done');
+  const bannerEl=document.getElementById('todoTodayBanner');
+  if(todayRows.length){
+    bannerEl.innerHTML=`<div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#92400e">
+      <strong>📌 Today (${today}):</strong> ${todayRows.map(r=>r[1]).join(', ')}
+    </div>`;
+  } else { bannerEl.innerHTML=''; }
   if(!rows.length){el.innerHTML='<div style="color:var(--muted);font-size:13px;padding:20px;text-align:center">No tasks yet.</div>';return}
   const pcolor={high:'#dc2626',medium:'#d97706',low:'#059669'};
   const repLabel={none:'',monthly:'🔁 Monthly',yearly:'🔁 Yearly'};
@@ -1020,11 +1029,12 @@ function renderTodos(){
   el.innerHTML=rows.map(r=>{
     const [id,task,due,pri,status,rep,rem]=r;
     const done=status==='done';
+    const isToday=due===today;
     const tags=[repLabel[rep],remLabel[rem]].filter(Boolean).join(' · ');
-    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:#fff">
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid ${isToday?'#f59e0b':'var(--border)'};border-radius:8px;margin-bottom:8px;background:${isToday?'#fffbeb':'#fff'}">
       <input type="checkbox" ${done?'checked':''} onchange="toggleTodo(${id},'${status}')" style="width:16px;height:16px;cursor:pointer"/>
       <div style="flex:1">
-        <div style="font-size:13px;font-weight:600;${done?'text-decoration:line-through;color:var(--muted)':''}">${task}</div>
+        <div style="font-size:13px;font-weight:600;${done?'text-decoration:line-through;color:var(--muted)':''}">${isToday?'🟠 ':''}${task}</div>
         <div style="font-size:11px;color:var(--muted);margin-top:2px">${due?('Due: '+due+' · '):''}<span style="color:${pcolor[pri]||'#666'};font-weight:600">${pri.toUpperCase()}</span>${tags?(' · '+tags):''}</div>
       </div>
       <button onclick="deleteTodo(${id})" style="padding:4px 10px;background:#fee2e2;color:#dc2626;border:none;border-radius:6px;cursor:pointer;font-size:12px">🗑</button>

@@ -518,7 +518,7 @@ async function initDB(){
         const d=JSON.parse(saved);
         (d.files||[]).forEach(r=>db.run(`INSERT OR IGNORE INTO files(id,cabinet,file_number,title,local_path,scanned_date)VALUES(?,?,?,?,?,?)`,r));
         (d.file_cats||[]).forEach(r=>db.run(`INSERT OR IGNORE INTO file_cats(id,file_id,category)VALUES(?,?,?)`,r));
-        (d.app_settings||[]).forEach(r=>db.run(`INSERT OR IGNORE INTO app_settings(key,value)VALUES(?,?)`,r));
+        (d.app_settings||[]).forEach(r=>{ db.run(`INSERT OR IGNORE INTO app_settings(key,value)VALUES(?,?)`,r); if(r[0]==='file_base_path') basePathVal=r[1].replace(/[\\\/]+$/,''); });
         (d.folders||[]).forEach(r=>db.run(`INSERT OR IGNORE INTO folders(id,name,path)VALUES(?,?,?)`,r));
       }
     }catch(e){console.warn('restore error',e);}
@@ -941,6 +941,7 @@ initDB();
 
 // ── FILES MODULE ──────────────────────────────────────────
 let filesData = [];
+let basePathVal = '';
 
 function persistFiles(){
   try{
@@ -1008,6 +1009,7 @@ function saveSelectedFiles(today){
 function saveBasePath(){
   const bp = document.getElementById('fileBasePath').value.trim().replace(/[\\\/]+$/,'');
   if(!bp) return;
+  basePathVal = bp;
   db.run(`INSERT OR REPLACE INTO app_settings(key,value) VALUES('file_base_path',?)`,[bp]);
   // Migrate existing records that have only relative paths (no drive letter)
   const all = db.exec(`SELECT id,local_path FROM files`);
@@ -1035,7 +1037,7 @@ function loadFiles(){
   if(filesData.length) document.getElementById('fileScanMsg').textContent=`${filesData.length} file(s) in database.`;
   // Load saved base path
   const bp = db.exec(`SELECT value FROM app_settings WHERE key='file_base_path'`);
-  if(bp.length && bp[0].values.length) document.getElementById('fileBasePath').value = bp[0].values[0][0];
+  if(bp.length && bp[0].values.length){ document.getElementById('fileBasePath').value = bp[0].values[0][0]; basePathVal = bp[0].values[0][0].replace(/[\\\/]+$/,''); }
   // Build unique folder paths from all files
   const folderSet = new Set();
   filesData.forEach(f=>{
@@ -1185,7 +1187,7 @@ function saveFileEdit(){
 function openFilePopup(id){
   const f = filesData.find(x=>x.id===id);
   if(!f) return;
-  const base = (document.getElementById('fileBasePath').value||'').trim().replace(/[\\\/]+$/,'');
+  const base = basePathVal || (document.getElementById('fileBasePath').value||'').trim().replace(/[\\\/]+$/,'');
   const stored = (f.local_path||'').replace(/\\/g,'/');
   const isAbsolute = /^[A-Za-z]:\//.test(stored) || stored.startsWith('//');
   const fullPath = isAbsolute ? stored.replace(/\//g,'\\') : (base ? base + '\\' + stored.replace(/\//g,'\\') : stored);

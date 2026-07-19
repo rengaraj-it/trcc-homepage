@@ -1187,16 +1187,20 @@ function saveFileEdit(){
 function openFilePopup(id){
   const f = filesData.find(x=>x.id===id);
   if(!f) return;
-  const base = (basePathVal || (document.getElementById("fileBasePath").value||"").trim()).replace(/[\\/]+$/,"");
-  const rel = (f.local_path||"").replace(/\\/g,"/");
-  const fullPath = base ? base + "\\" + rel.replace(/\//g,"\\") : rel;
-  const href = "file:///" + fullPath.replace(/\\/g,"/");
-  document.getElementById("fpTitle").textContent = f.title||"File";
-  document.getElementById("fpMeta").textContent = [f.cabinet?"Cabinet: "+f.cabinet:"",f.file_number?"No: "+f.file_number:"",f.scanned_date?"Scanned: "+f.scanned_date:""].filter(Boolean).join(" · ");
-  document.getElementById("fpPath").textContent = fullPath||"(enter Base Path and click Save Path)";
-  document.getElementById("fpLink").href = href;
-  document.getElementById("fpCopyMsg").textContent = "";
-  document.getElementById("filePreviewOverlay").classList.add("open");
+  // Get base path from all possible sources
+  let base = basePathVal;
+  if(!base){ try{ const s=localStorage.getItem('trcc_files'); if(s){ const d=JSON.parse(s); const ap=(d.app_settings||[]).find(r=>r[0]==='file_base_path'); if(ap) base=ap[1]; } }catch(e){} }
+  if(!base){ const el=document.getElementById('fileBasePath'); if(el) base=el.value||''; }
+  base = (base||'').replace(/[\\/]+$/,'');
+  const rel = (f.local_path||'').replace(/\\/g,'/');
+  const fullPath = base ? base + '\\' + rel.replace(/\//g,'\\') : rel;
+  const href = 'file:///' + fullPath.replace(/\\/g,'/');
+  document.getElementById('fpTitle').textContent = f.title||'File';
+  document.getElementById('fpMeta').textContent = [f.cabinet?'Cabinet: '+f.cabinet:'',f.file_number?'No: '+f.file_number:'',f.scanned_date?'Scanned: '+f.scanned_date:''].filter(Boolean).join(' · ');
+  document.getElementById('fpPath').textContent = fullPath||'(enter Base Path and click Save Path)';
+  document.getElementById('fpLink').href = href;
+  document.getElementById('fpCopyMsg').textContent = '';
+  document.getElementById('filePreviewOverlay').classList.add('open');
 }
 function closeFilePreview(){document.getElementById('filePreviewOverlay').classList.remove('open');}
 function copyFilePath(){

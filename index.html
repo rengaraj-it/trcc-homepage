@@ -969,6 +969,16 @@ function persistTodos(){
   const rows=db.exec("SELECT id,task,due_date,priority,status,created,repeat_type,reminder FROM todos")[0];
   localStorage.setItem('trcc_todos',JSON.stringify(rows?rows.values:[]));
 }
+function calcReminderDate(due,code){
+  const d=new Date(due+'T00:00:00');
+  if(code==='1d')d.setDate(d.getDate()-1);
+  else if(code==='2d')d.setDate(d.getDate()-2);
+  else if(code==='3d')d.setDate(d.getDate()-3);
+  else if(code==='1w')d.setDate(d.getDate()-7);
+  else if(code==='2w')d.setDate(d.getDate()-14);
+  else if(code==='1m')d.setMonth(d.getMonth()-1);
+  return d.toISOString().slice(0,10);
+}
 function addTodo(){
   const t=document.getElementById('todoTask').value.trim();
   if(!t){alert('Enter a task');return}
@@ -976,7 +986,12 @@ function addTodo(){
   const pri=document.getElementById('todoPriority').value;
   const rep=document.getElementById('todoRepeat').value;
   const rem=document.getElementById('todoReminder').value;
-  db.run("INSERT INTO todos(task,due_date,priority,status,created,repeat_type,reminder)VALUES(?,?,?,?,?,?,?)",[t,due,pri,'pending',new Date().toISOString().slice(0,10),rep,rem]);
+  const created=new Date().toISOString().slice(0,10);
+  db.run("INSERT INTO todos(task,due_date,priority,status,created,repeat_type,reminder)VALUES(?,?,?,?,?,?,?)",[t,due,pri,'pending',created,rep,rem]);
+  if(rem!=='none'&&due){
+    const rdate=calcReminderDate(due,rem);
+    db.run("INSERT INTO todos(task,due_date,priority,status,created,repeat_type,reminder)VALUES(?,?,?,?,?,?,?)",['🔔 Reminder: '+t,rdate,pri,'pending',created,'none','none']);
+  }
   document.getElementById('todoTask').value='';document.getElementById('todoDue').value='';
   document.getElementById('todoRepeat').value='none';document.getElementById('todoReminder').value='none';
   persistTodos();renderTodos();

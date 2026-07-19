@@ -427,6 +427,18 @@
           <select id="todoPriority" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px">
             <option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option>
           </select>
+          <select id="todoRepeat" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+            <option value="none" selected>No Repeat</option><option value="monthly">Every Month</option><option value="yearly">Every Year</option>
+          </select>
+          <select id="todoReminder" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+            <option value="none" selected>No Reminder</option>
+            <option value="1d">1 day before</option>
+            <option value="2d">2 days before</option>
+            <option value="3d">3 days before</option>
+            <option value="1w">1 week before</option>
+            <option value="2w">2 weeks before</option>
+            <option value="1m">1 month before</option>
+          </select>
           <button onclick="addTodo()" style="padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px">+ Add</button>
         </div>
         <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
@@ -536,10 +548,10 @@ async function initDB(){
     db.run(`CREATE TABLE IF NOT EXISTS file_cats(id INTEGER PRIMARY KEY AUTOINCREMENT,file_id INTEGER,category TEXT)`);
     db.run(`CREATE TABLE IF NOT EXISTS app_settings(key TEXT PRIMARY KEY,value TEXT)`);
     db.run(`CREATE TABLE IF NOT EXISTS folders(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT,path TEXT)`);
-    db.run(`CREATE TABLE IF NOT EXISTS todos(id INTEGER PRIMARY KEY AUTOINCREMENT,task TEXT,due_date TEXT,priority TEXT,status TEXT,created TEXT)`);
+    db.run(`CREATE TABLE IF NOT EXISTS todos(id INTEGER PRIMARY KEY AUTOINCREMENT,task TEXT,due_date TEXT,priority TEXT,status TEXT,created TEXT,repeat_type TEXT DEFAULT 'none',reminder TEXT DEFAULT 'none')`);
     try{
       const st=localStorage.getItem('trcc_todos');
-      if(st){ JSON.parse(st).forEach(r=>db.run(`INSERT OR IGNORE INTO todos(id,task,due_date,priority,status,created)VALUES(?,?,?,?,?,?)`,r)); }
+      if(st){ JSON.parse(st).forEach(r=>db.run(`INSERT OR IGNORE INTO todos(id,task,due_date,priority,status,created,repeat_type,reminder)VALUES(?,?,?,?,?,?,?,?)`,r)); }
     }catch(e){}
     // Restore files data from localStorage
     try{
@@ -954,7 +966,7 @@ function enterDashboard(){
   switchModule('activity');showPage('dashPage');
 }
 function persistTodos(){
-  const rows=db.exec("SELECT id,task,due_date,priority,status,created FROM todos")[0];
+  const rows=db.exec("SELECT id,task,due_date,priority,status,created,repeat_type,reminder FROM todos")[0];
   localStorage.setItem('trcc_todos',JSON.stringify(rows?rows.values:[]));
 }
 function addTodo(){
@@ -962,8 +974,11 @@ function addTodo(){
   if(!t){alert('Enter a task');return}
   const due=document.getElementById('todoDue').value;
   const pri=document.getElementById('todoPriority').value;
-  db.run("INSERT INTO todos(task,due_date,priority,status,created)VALUES(?,?,?,?,?)",[t,due,pri,'pending',new Date().toISOString().slice(0,10)]);
+  const rep=document.getElementById('todoRepeat').value;
+  const rem=document.getElementById('todoReminder').value;
+  db.run("INSERT INTO todos(task,due_date,priority,status,created,repeat_type,reminder)VALUES(?,?,?,?,?,?,?)",[t,due,pri,'pending',new Date().toISOString().slice(0,10),rep,rem]);
   document.getElementById('todoTask').value='';document.getElementById('todoDue').value='';
+  document.getElementById('todoRepeat').value='none';document.getElementById('todoReminder').value='none';
   persistTodos();renderTodos();
 }
 function toggleTodo(id,status){
@@ -977,7 +992,7 @@ function deleteTodo(id){
 }
 function renderTodos(){
   const f=document.getElementById('todoStatusFilter').value;
-  let sql="SELECT id,task,due_date,priority,status FROM todos";
+  let sql="SELECT id,task,due_date,priority,status,repeat_type,reminder FROM todos";
   if(f)sql+=` WHERE status='${f}'`;
   sql+=" ORDER BY status ASC, due_date ASC";
   const res=db.exec(sql)[0];
@@ -985,14 +1000,17 @@ function renderTodos(){
   const el=document.getElementById('todosList');
   if(!rows.length){el.innerHTML='<div style="color:var(--muted);font-size:13px;padding:20px;text-align:center">No tasks yet.</div>';return}
   const pcolor={high:'#dc2626',medium:'#d97706',low:'#059669'};
+  const repLabel={none:'',monthly:'🔁 Monthly',yearly:'🔁 Yearly'};
+  const remLabel={none:'','1d':'⏰ 1 day before','2d':'⏰ 2 days before','3d':'⏰ 3 days before','1w':'⏰ 1 week before','2w':'⏰ 2 weeks before','1m':'⏰ 1 month before'};
   el.innerHTML=rows.map(r=>{
-    const [id,task,due,pri,status]=r;
+    const [id,task,due,pri,status,rep,rem]=r;
     const done=status==='done';
+    const tags=[repLabel[rep],remLabel[rem]].filter(Boolean).join(' · ');
     return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:#fff">
       <input type="checkbox" ${done?'checked':''} onchange="toggleTodo(${id},'${status}')" style="width:16px;height:16px;cursor:pointer"/>
       <div style="flex:1">
         <div style="font-size:13px;font-weight:600;${done?'text-decoration:line-through;color:var(--muted)':''}">${task}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">${due?('Due: '+due+' · '):''}<span style="color:${pcolor[pri]||'#666'};font-weight:600">${pri.toUpperCase()}</span></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">${due?('Due: '+due+' · '):''}<span style="color:${pcolor[pri]||'#666'};font-weight:600">${pri.toUpperCase()}</span>${tags?(' · '+tags):''}</div>
       </div>
       <button onclick="deleteTodo(${id})" style="padding:4px 10px;background:#fee2e2;color:#dc2626;border:none;border-radius:6px;cursor:pointer;font-size:12px">🗑</button>
     </div>`;

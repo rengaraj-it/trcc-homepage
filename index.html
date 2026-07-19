@@ -1187,17 +1187,16 @@ function saveFileEdit(){
 function openFilePopup(id){
   const f = filesData.find(x=>x.id===id);
   if(!f) return;
-  const base = basePathVal || (document.getElementById('fileBasePath').value||'').trim().replace(/[\\\/]+$/,'');
-  const stored = (f.local_path||'').replace(/\\/g,'/');
-  const isAbsolute = /^[A-Za-z]:\//.test(stored) || stored.startsWith('//');
-  const fullPath = isAbsolute ? stored.replace(/\//g,'\\') : (base ? base + '\\' + stored.replace(/\//g,'\\') : stored);
-  const href = fullPath ? `file:///${fullPath.replace(/\\/g,'/')}` : '#';
-  document.getElementById('fpTitle').textContent = f.title||'File';
-  document.getElementById('fpMeta').textContent = [f.cabinet?'Cabinet: '+f.cabinet:'', f.file_number?'No: '+f.file_number:'', f.scanned_date?'Scanned: '+f.scanned_date:''].filter(Boolean).join('  ·  ');
-  document.getElementById('fpPath').textContent = fullPath||(base?base+'\\(relative path missing)':'Enter Base Path above first');
-  document.getElementById('fpLink').href = href;
-  document.getElementById('fpCopyMsg').textContent = '';
-  document.getElementById('filePreviewOverlay').classList.add('open');
+  const base = (basePathVal || (document.getElementById("fileBasePath").value||"").trim()).replace(/[\\/]+$/,"");
+  const rel = (f.local_path||"").replace(/\\/g,"/");
+  const fullPath = base ? base + "\\" + rel.replace(/\//g,"\\") : rel;
+  const href = "file:///" + fullPath.replace(/\\/g,"/");
+  document.getElementById("fpTitle").textContent = f.title||"File";
+  document.getElementById("fpMeta").textContent = [f.cabinet?"Cabinet: "+f.cabinet:"",f.file_number?"No: "+f.file_number:"",f.scanned_date?"Scanned: "+f.scanned_date:""].filter(Boolean).join(" · ");
+  document.getElementById("fpPath").textContent = fullPath||"(enter Base Path and click Save Path)";
+  document.getElementById("fpLink").href = href;
+  document.getElementById("fpCopyMsg").textContent = "";
+  document.getElementById("filePreviewOverlay").classList.add("open");
 }
 function closeFilePreview(){document.getElementById('filePreviewOverlay').classList.remove('open');}
 function copyFilePath(){

@@ -1212,9 +1212,7 @@ function openFilePopup(id){
   let base = basePathVal;
   if(!base){ try{ const s=localStorage.getItem('trcc_files'); if(s){ const d=JSON.parse(s); const ap=(d.app_settings||[]).find(r=>r[0]==='file_base_path'); if(ap) base=ap[1]; } }catch(e){} }
   if(!base){ const el=document.getElementById('fileBasePath'); if(el) base=el.value||''; }
-  base = (base||'').replace(/[\\/]+$/,'');
-  const rel = (f.local_path||'').replace(/\\/g,'/');
-  const fullPath = base ? base + '\\' + rel.replace(/\//g,'\\') : rel;
+  const fullPath = (f.local_path||'').replace(/\//g,'\\\\');
   const href = 'file:///' + fullPath.replace(/\\/g,'/');
   document.getElementById('fpTitle').textContent = f.title||'File';
   document.getElementById('fpMeta').textContent = [f.cabinet?'Cabinet: '+f.cabinet:'',f.file_number?'No: '+f.file_number:'',f.scanned_date?'Scanned: '+f.scanned_date:''].filter(Boolean).join(' · ');

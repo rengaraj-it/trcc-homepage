@@ -1010,7 +1010,7 @@ function renderTodos(){
   const f=document.getElementById('todoStatusFilter').value;
   let sql="SELECT id,task,due_date,priority,status,repeat_type,reminder FROM todos";
   if(f)sql+=` WHERE status='${f}'`;
-  sql+=" ORDER BY status ASC, due_date ASC";
+  sql+=" ORDER BY CASE WHEN status='pending' THEN 0 ELSE 1 END ASC, due_date ASC";
   const res=db.exec(sql)[0];
   const rows=res?res.values:[];
   const el=document.getElementById('todosList');
